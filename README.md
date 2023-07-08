@@ -1,7 +1,7 @@
 # 라이징 캠프 플러스 1기 - 백엔드
 ## 에이드 Repository
 
-- **1 주차**: OT & 서버 개요
+- **1 주차**: [OT & 서버 개요](https://github.com/GrandNewStart/Rising-Camp-Plus-Backend/blob/main/Week%201/%EA%B0%9C%EB%B0%9C%EC%9D%BC%EC%A7%80.md)
 - **2 주차**: 자바
 - **3 주차**: 데이터베이스
 - **4 주차**: REST API, Spring 개요

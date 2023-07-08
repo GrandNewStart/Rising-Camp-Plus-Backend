@@ -1,5 +1,11 @@
-# Rising-Camp-Plus-Backend
-# Rising-Camp-Plus-Backend
-# Rising-Camp-Plus-Backend
-# Rising-Camp-Plus-Backend
-# Rising-Camp-Plus-Backend
+# 라이징 캠프 플러스 1기 - 백엔드
+## 에이드 Repository
+
+- **1 주차**: OT & 서버 개요
+- **2 주차**: 자바
+- **3 주차**: 데이터베이스
+- **4 주차**: REST API, Spring 개요
+- **5 주차**: JPA
+- **6 주차**: 인증 & 인가
+- **7 주차**: 네트워크 및 클라우드 서비스
+- **8 주차**: 해커톤 피드백 

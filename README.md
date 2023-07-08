@@ -8,4 +8,4 @@
 - **5 주차**: [JPA](https://github.com/GrandNewStart/Rising-Camp-Plus-Backend/blob/main/Week%205/%EA%B0%9C%EB%B0%9C%EC%9D%BC%EC%A7%80.md)
 - **6 주차**: [인증 & 인가](https://github.com/GrandNewStart/Rising-Camp-Plus-Backend/blob/main/Week%206/%EA%B0%9C%EB%B0%9C%EC%9D%BC%EC%A7%80.md)
 - **7 주차**: [네트워크 및 클라우드 서비스](https://github.com/GrandNewStart/Rising-Camp-Plus-Backend/blob/main/Week%207/%EA%B0%9C%EB%B0%9C%EC%9D%BC%EC%A7%80.md)
-- **8 주차**: [해커톤 피드백] (https://github.com/GrandNewStart/Rising-Camp-Plus-Backend/blob/main/Week%208/%EA%B0%9C%EB%B0%9C%EC%9D%BC%EC%A7%80.md)
+- **8 주차**: [해커톤 피드백](https://github.com/GrandNewStart/Rising-Camp-Plus-Backend/blob/main/Week%208/%EA%B0%9C%EB%B0%9C%EC%9D%BC%EC%A7%80.md)

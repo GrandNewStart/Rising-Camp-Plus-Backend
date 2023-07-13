@@ -1,0 +1,23 @@
+// https://www.acmicpc.net/problem/2675
+
+import java.util.Scanner;
+
+public class Main {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int T = scanner.nextInt();
+        for (int i=0; i<T; i++) {
+            int n = scanner.nextInt();
+            String S = scanner.next();
+            for (int j=0; j<S.length(); j++) {
+                char c = S.toCharArray()[j];
+                for (int k=0; k<n; k++) {
+                    System.out.print(c);
+                }
+            }
+            System.out.print("\n");
+        }
+    }
+
+}

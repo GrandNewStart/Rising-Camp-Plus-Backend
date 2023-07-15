@@ -34,16 +34,21 @@ public abstract class Client implements DiscountImpl {
         this.discountType = discountType;
     }
 
-    public Double getPrice(Double price) {
+    public Integer getPrice(Integer price) {
         switch (this.discountType) {
             case DISCOUNT -> {
-                return price * (1 - this.rank.discountRate);
+                double p = price * (1 - this.rank.discountRate);
+                System.out.printf("결제 금액: %d\n", (int) p);
+                return (int) p;
             }
             case BONUS -> {
-                return price + price * this.rank.discountRate;
+                double bonus = price * this.rank.discountRate;
+                System.out.printf("보너스: %d\n", (int) bonus);
+                System.out.printf("결제 금액: %d\n", price);
+                return price;
             }
         }
-        return 0.0;
+        return price;
     }
 
     public boolean equals(Client client) {

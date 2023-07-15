@@ -6,7 +6,7 @@ public enum DiscountType {
 
     public final String description;
 
-    private DiscountType(String description) {
+    DiscountType(String description) {
         this.description = description;
     }
 

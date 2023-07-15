@@ -3,9 +3,25 @@ package src.models;
 public class SaleService {
 
     private String name;
-    private Double price;
+    private Integer price;
 
-    public SaleService(String name, Double price) {
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getPrice() {
+        return price;
+    }
+
+    public void setPrice(Integer price) {
+        this.price = price;
+    }
+
+    public SaleService(String name, Integer price) {
         this.name = name;
         this.price = price;
     }

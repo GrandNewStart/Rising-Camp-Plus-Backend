@@ -1,10 +1,10 @@
 package src.models;
 
-import src.impls.DiscountImpl;
+import src.interfaces.Discount;
 import src.enums.DiscountType;
 import src.enums.Rank;
 
-public abstract class Client implements DiscountImpl {
+public abstract class Client implements Discount {
 
     protected String name;
     protected Rank rank;

@@ -1,27 +1,27 @@
 
 package com.ade.learnspringframework.app04;
 
-import org.springframework.context.annotation.Primary;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
-@Primary
-public class MarioGame implements GamingConsole {
+@Qualifier("SonicGameQualifier")
+public class SonicGame implements GamingConsole {
 
     public void up() {
         System.out.println("Jump");
     }
 
     public void down() {
-        System.out.println("Go into a hole");
+        System.out.println("Crouch");
     }
 
     public void left() {
-        System.out.println("Go back");
+        System.out.println("Run back");
     }
 
     public void right() {
-        System.out.println("Accelerate");
+        System.out.println("Run");
     }
 
 }

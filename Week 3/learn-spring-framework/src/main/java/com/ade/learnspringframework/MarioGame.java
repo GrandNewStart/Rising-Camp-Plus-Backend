@@ -1,5 +1,5 @@
-package com.ade.learnspringframework;
 
+package com.ade.learnspringframework;
 public class MarioGame {
 
     public void up() {
@@ -17,6 +17,5 @@ public class MarioGame {
     public void right() {
         System.out.println("Accelerate");
     }
-
 
 }

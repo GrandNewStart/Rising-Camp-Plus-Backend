@@ -1,5 +1,5 @@
 
-package com.ade.learnspringframework;
+package com.ade.learnspringframework.app01;
 public class SonicGame implements GamingConsole {
 
     public void up() {

@@ -1,4 +1,4 @@
-package com.ade.learnspringframework;
+package com.ade.learnspringframework.app02;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;

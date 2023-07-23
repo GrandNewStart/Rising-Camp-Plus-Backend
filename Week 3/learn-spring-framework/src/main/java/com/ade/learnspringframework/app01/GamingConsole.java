@@ -1,4 +1,4 @@
-package com.ade.learnspringframework;
+package com.ade.learnspringframework.app01;
 
 public interface GamingConsole {
 

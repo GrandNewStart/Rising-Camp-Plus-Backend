@@ -1,15 +1,13 @@
-package com.ade.tinder.match.models;
+package com.ade.tinder.services.like.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
-public class GetMatchRes {
+public class Match {
     private int userAId;
     private int userBId;
 
@@ -17,7 +15,7 @@ public class GetMatchRes {
     public boolean equals(Object obj) {
         if (obj == null) return false;
         if (this.getClass() != obj.getClass()) return false;
-        GetMatchRes other = (GetMatchRes) obj;
+        Match other = (Match) obj;
         return ((other.userAId == this.userAId) && (other.userBId == this.userBId)) ||
                 ((other.userAId == this.userBId) && (other.userBId == this.userAId));
     }

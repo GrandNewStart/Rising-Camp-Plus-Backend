@@ -1,4 +1,4 @@
-package com.ade.tinder.user.models;
+package com.ade.tinder.services.user.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

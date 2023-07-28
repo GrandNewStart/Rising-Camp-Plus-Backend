@@ -4,6 +4,7 @@ import com.ade.tinder.BaseResponse;
 import com.ade.tinder.MockRepository;
 import com.ade.tinder.services.like.models.Like;
 import com.ade.tinder.services.like.models.Match;
+import com.ade.tinder.services.user.models.User;
 import com.ade.tinder.utils.DateUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,9 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-public class LikeController {
+public class LikeController implements LikeService {
 
-    @GetMapping("/likes")
+    @Override
     public BaseResponse<Object> getAllLikes() {
         return BaseResponse.builder()
             .status(200)
@@ -24,22 +25,13 @@ public class LikeController {
             .build();
     }
 
-    @GetMapping(value = "/likes", params = {"user-a", "user-b"})
-    public BaseResponse<Object> getLikesBetweenUsers(
-        @RequestParam("user-a")int userAId,
-        @RequestParam("user-b")int userBId
-    ) {
+    @Override
+    public BaseResponse<Object> getLikesBetweenUsers(int userAId, int userBId) {
         List<Like> data =  MockRepository.shared.getLikes().stream()
             .filter(e->
                 (e.getFromUserId() == userAId && e.getToUserId() == userBId) ||
                 (e.getFromUserId() == userBId && e.getToUserId() == userAId)
             )
-            .map(e->new Like(
-                e.getId(),
-                e.getFromUserId(),
-                e.getToUserId(),
-                e.getCreatedAt()
-            ))
             .toList();
         return BaseResponse.builder()
             .status(200)
@@ -49,7 +41,7 @@ public class LikeController {
             .build();
     }
 
-    @RequestMapping("/matches")
+    @Override
     public BaseResponse<Object> getAllMatches() {
         List<Like> likes = MockRepository.shared.getLikes();
         List<Match> matches = new ArrayList<>();
@@ -77,8 +69,8 @@ public class LikeController {
             .build();
     }
 
-    @PostMapping("/like")
-    public BaseResponse<Object> addLike(@RequestBody Map<String, Object> requestData) {
+    @Override
+    public BaseResponse<Object> addLike(Map<String, Object> requestData) {
         int fromUserId;
         int toUserId;
         try {
@@ -88,36 +80,100 @@ public class LikeController {
             return BaseResponse.builder()
                 .status(500)
                 .message("FAILURE")
-                .info("incorrect parameters")
+                .info("invalid parameters")
                 .data(null)
                 .build();
         }
-        List<Like> allLikes = MockRepository.shared.getLikes();
-        boolean found = false;
-        for (Like like : allLikes) {
-            if (like.getFromUserId() == fromUserId && like.getToUserId() == toUserId) {
-                found = true;
-                break;
-            }
+        List<User> allUsers = MockRepository.shared.getUsers();
+        boolean fromUserFound = false;
+        boolean toUserFound = false;
+        for (User user : allUsers) {
+            if (user.getId() == fromUserId) fromUserFound = true;
+            if (user.getId() == toUserId) toUserFound = true;
+            if (fromUserFound && toUserFound) break;
         }
-        if (found) {
+        if (!fromUserFound) {
             return BaseResponse.builder()
                 .status(500)
                 .message("FAILURE")
-                .info("duplicate item")
-                .data(null)
-                .build();
-        } else {
-            int id = MockRepository.shared.getNextLikeId();
-            MockRepository.shared.addLike(new Like(id, fromUserId, toUserId, DateUtils.getDate()));
-            MockRepository.shared.setNextLikeId(id+1);
-            return BaseResponse.builder()
-                .status(200)
-                .message("SUCCESS")
-                .info("add new like")
+                .info("user " + fromUserId + " not found")
                 .data(null)
                 .build();
         }
+        if (!toUserFound) {
+            return BaseResponse.builder()
+                .status(500)
+                .message("FAILURE")
+                .info("user " + toUserId + " not found")
+                .data(null)
+                .build();
+        }
+
+        List<Like> allLikes = MockRepository.shared.getLikes();
+        for (Like like : allLikes) {
+            if (like.getFromUserId() == fromUserId && like.getToUserId() == toUserId) {
+                like.setReverted(false);
+                like.setCreatedAt(DateUtils.getDate());
+                MockRepository.shared.updateLike(like);
+                return BaseResponse.builder()
+                    .status(200)
+                    .message("SUCCESS")
+                    .info("add new like")
+                    .data(null)
+                    .build();
+            }
+        }
+        int id = MockRepository.shared.getNextLikeId();
+        MockRepository.shared.addLike(new Like(id, fromUserId, toUserId, false, DateUtils.getDate()));
+        MockRepository.shared.setNextLikeId(id+1);
+        return BaseResponse.builder()
+            .status(200)
+            .message("SUCCESS")
+            .info("add new like")
+            .data(null)
+            .build();
+    }
+
+    @Override
+    public BaseResponse<Object> revertLike(Map<String, Object> requestData) {
+        List<Like> allLikes = MockRepository.shared.getLikes();
+        int likeId;
+        try {
+            likeId = (int) requestData.get("likeId");
+        } catch (Exception e) {
+            return BaseResponse.builder()
+                .status(500)
+                .message("FAILURE")
+                .info("invalid parameter")
+                .data(null)
+                .build();
+        }
+        for (Like like : allLikes) {
+            if (like.getId() == likeId) {
+                if (like.isReverted()) {
+                    return BaseResponse.builder()
+                        .status(500)
+                        .message("FAILURE")
+                        .info("already reverted")
+                        .data(null)
+                        .build();
+                }
+                like.setReverted(true);
+                MockRepository.shared.updateLike(like);
+                return BaseResponse.builder()
+                    .status(200)
+                    .message("SUCCESS")
+                    .info("like reverted")
+                    .data(null)
+                    .build();
+            }
+        }
+        return BaseResponse.builder()
+            .status(500)
+            .message("FAILURE")
+            .info("like not found")
+            .data(null)
+            .build();
     }
 
 }

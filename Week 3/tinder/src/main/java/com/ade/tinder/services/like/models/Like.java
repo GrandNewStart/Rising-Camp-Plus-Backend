@@ -11,6 +11,7 @@ public class Like {
     private int id;
     private int fromUserId;
     private int toUserId;
+    private boolean isReverted;
     private String createdAt;
 
     public boolean isMatch(Like other) {

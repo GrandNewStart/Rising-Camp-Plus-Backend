@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-public class UserController {
+public class UserController implements UserService {
 
     @GetMapping("/users")
     public BaseResponse<Object> getAllUsers() {

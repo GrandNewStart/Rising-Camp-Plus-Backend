@@ -1,5 +1,6 @@
 package com.ade.tinder.services.chat;
 
+import com.ade.tinder.BaseResponse;
 import com.ade.tinder.services.chat.models.Chat;
 import com.ade.tinder.services.chat.models.Message;
 import com.ade.tinder.services.chat.models.MessageReaction;
@@ -32,11 +33,28 @@ public class ChatRepository {
     private Chat addNewChat(int userAId, int userBId) {
         int chatId = this.nextChatId;
         ArrayList<Chat> newChats = new ArrayList<>(this.chats);
-        Chat chat = new Chat(chatId, userAId, userBId, 0);
+        Chat chat = new Chat(chatId, userAId, userBId, 0, false);
         newChats.add(chat);
         this.chats = newChats;
         this.nextChatId += 1;
         return chat;
+    }
+    public void destroyChat(int chatId, int userAId, int userBId) throws Exception {
+        ArrayList<Chat> newChats = new ArrayList<>(this.chats);
+        for (int i=0; i<newChats.size(); i++) {
+            Chat chat = newChats.get(i);
+            if (chat.getId() == chatId) {
+                List<Integer> users = List.of(chat.getUserAId(), chat.getUserBId());
+                if (users.contains(userAId) && users.contains(userBId)) {
+                    chat.setDestroyed(true);
+                    newChats.set(i, chat);
+                    this.chats = newChats;
+                    return;
+                }
+                throw new Exception("invalid user ids");
+            }
+        }
+        throw new Exception("chat not found");
     }
     public void createNewMessage(int senderId, int receiverId, String body) {
         Chat chat = null;

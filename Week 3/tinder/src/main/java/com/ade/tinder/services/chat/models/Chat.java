@@ -12,4 +12,5 @@ public class Chat {
     private int userAId;
     private int userBId;
     private int lastMessageId;
+    private boolean isDestroyed;
 }

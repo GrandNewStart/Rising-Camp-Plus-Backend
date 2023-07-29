@@ -5,9 +5,7 @@ import com.ade.tinder.services.chat.models.Chat;
 import com.ade.tinder.services.chat.models.Message;
 import com.ade.tinder.utils.DateUtils;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.ArrayList;;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +39,14 @@ public class ChatController implements ChatService {
                 .data(null)
                 .build();
         }
+        if (chat.isDestroyed()) {
+            return BaseResponse.builder()
+                .status(500)
+                .message("FAILURE")
+                .info("no chat found")
+                .data(null)
+                .build();
+        }
         List<Message> data = new ArrayList<>();
         for (Message m : ChatRepository.shared.getMessages()) {
             if (m.getChatId() == chatId) {
@@ -56,7 +62,6 @@ public class ChatController implements ChatService {
             .build();
     }
 
-
     @Override
     public BaseResponse<Object> sendMessage(Map<String, Object> map) {
         int senderId, receiverId;
@@ -67,11 +72,19 @@ public class ChatController implements ChatService {
             body = (String) map.get("body");
         } catch(Exception e) {
             return BaseResponse.builder()
-                    .status(500)
-                    .message("FAILURE")
-                    .info("invalid parameters")
-                    .data(null)
-                    .build();
+                .status(500)
+                .message("FAILURE")
+                .info("invalid parameters")
+                .data(null)
+                .build();
+        }
+        if (senderId == receiverId) {
+            return BaseResponse.builder()
+                .status(500)
+                .message("FAILURE")
+                .info("sender and receiver cannot be the same")
+                .data(null)
+                .build();
         }
         ChatRepository.shared.createNewMessage(senderId, receiverId, body);
         return BaseResponse.builder()
@@ -80,6 +93,47 @@ public class ChatController implements ChatService {
                 .info("message successfully sent")
                 .data(null)
                 .build();
+    }
+
+    @Override
+    public BaseResponse<Object> destroyChat(Map<String, Object> map) {
+        int chatId, senderId, receiverId;
+        try {
+            senderId = (int) map.get("senderId");
+            receiverId = (int) map.get("receiverId");
+            chatId = (int) map.get("chatId");
+        } catch(Exception e) {
+            return BaseResponse.builder()
+                .status(500)
+                .message("FAILURE")
+                .info("invalid parameters")
+                .data(null)
+                .build();
+        }
+        if (senderId == receiverId) {
+            return BaseResponse.builder()
+                .status(500)
+                .message("FAILURE")
+                .info("sender and receiver cannot be the same")
+                .data(null)
+                .build();
+        }
+        try {
+            ChatRepository.shared.destroyChat(chatId, senderId, receiverId);
+            return BaseResponse.builder()
+                .status(200)
+                .message("SUCCESS")
+                .info("chat successfully destroyed")
+                .data(null)
+                .build();
+        } catch(Exception e) {
+            return BaseResponse.builder()
+                .status(500)
+                .message("FAILURE")
+                .info(e.getMessage())
+                .data(null)
+                .build();
+        }
     }
 
 }

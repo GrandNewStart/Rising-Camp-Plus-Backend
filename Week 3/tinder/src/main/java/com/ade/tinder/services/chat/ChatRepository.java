@@ -4,6 +4,7 @@ import com.ade.tinder.BaseResponse;
 import com.ade.tinder.services.chat.models.Chat;
 import com.ade.tinder.services.chat.models.Message;
 import com.ade.tinder.services.chat.models.MessageReaction;
+import com.ade.tinder.services.chat.models.Reaction;
 import com.ade.tinder.utils.DateUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,15 +22,16 @@ public class ChatRepository {
     private List<Chat> chats = List.of();
     private int nextChatId = 1;
     private List<Message> messages = List.of();
-    private List<MessageReaction> reactions = List.of(
-            new MessageReaction(1, "좋아요"),
-            new MessageReaction(2, "하트"),
-            new MessageReaction(3, "슬픔"),
-            new MessageReaction(4, "화남"),
-            new MessageReaction(5, "혼란"),
-            new MessageReaction(6, "놀람"),
-            new MessageReaction(7, "웃김")
+    private List<Reaction> reactions = List.of(
+            new Reaction(1, "좋아요"),
+            new Reaction(2, "하트"),
+            new Reaction(3, "슬픔"),
+            new Reaction(4, "화남"),
+            new Reaction(5, "혼란"),
+            new Reaction(6, "놀람"),
+            new Reaction(7, "웃김")
     );
+    private List<MessageReaction> messageReactions = List.of();
     private Chat addNewChat(int userAId, int userBId) {
         int chatId = this.nextChatId;
         ArrayList<Chat> newChats = new ArrayList<>(this.chats);
@@ -81,6 +83,20 @@ public class ChatRepository {
         List<Message> updatedMessages = new ArrayList<>(this.messages);
         updatedMessages.add(message);
         this.messages = updatedMessages;
+    }
+
+    public void addReaction(int chatId, int messageId, int reactionId) {
+        List<MessageReaction> newList = new ArrayList<>(this.messageReactions);
+        for (int i=0; i<newList.size(); i++) {
+            MessageReaction reaction = newList.get(i);
+            if (reaction.getChatId() == chatId && reaction.getMessageId() == messageId) {
+                reaction.setReactionId(reactionId);
+                newList.set(i, reaction);
+                break;
+            }
+        }
+        newList.add(new MessageReaction(chatId, messageId, reactionId));
+        this.messageReactions = newList;
     }
 
 }

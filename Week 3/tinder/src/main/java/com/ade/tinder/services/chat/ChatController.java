@@ -63,6 +63,16 @@ public class ChatController implements ChatService {
     }
 
     @Override
+    public BaseResponse<Object> getAllMessageReactions() {
+        return BaseResponse.builder()
+            .status(200)
+            .message("SUCCESS")
+            .info("all message reactions")
+            .data(ChatRepository.shared.getReactions())
+            .build();
+    }
+
+    @Override
     public BaseResponse<Object> sendMessage(Map<String, Object> map) {
         int senderId, receiverId;
         String body;
@@ -88,11 +98,35 @@ public class ChatController implements ChatService {
         }
         ChatRepository.shared.createNewMessage(senderId, receiverId, body);
         return BaseResponse.builder()
-                .status(200)
-                .message("SUCCESS")
-                .info("message successfully sent")
+            .status(200)
+            .message("SUCCESS")
+            .info("message successfully sent")
+            .data(null)
+            .build();
+    }
+
+    @Override
+    public BaseResponse<Object> addReaction(Map<String, Object> map) {
+        int chatId, messageId, reactionId;
+        try {
+            chatId = (int) map.get("chatId");
+            messageId = (int) map.get("messageId");
+            reactionId = (int) map.get("reactionId");
+        } catch(Exception e) {
+            return BaseResponse.builder()
+                .status(500)
+                .message("FAILURE")
+                .info("invalid parameters")
                 .data(null)
                 .build();
+        }
+        ChatRepository.shared.addReaction(chatId, messageId, reactionId);
+        return BaseResponse.builder()
+            .status(200)
+            .message("SUCCESS")
+            .info("reaction successfully added")
+            .data(null)
+            .build();
     }
 
     @Override

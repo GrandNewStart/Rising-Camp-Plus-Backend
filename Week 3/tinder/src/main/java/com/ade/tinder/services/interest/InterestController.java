@@ -1,7 +1,6 @@
 package com.ade.tinder.services.interest;
 
 import com.ade.tinder.BaseResponse;
-import com.ade.tinder.MockRepository;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -13,7 +12,7 @@ public class InterestController implements InterestService {
             .status(200)
             .message("SUCCESS")
             .info("all interests")
-            .data(MockRepository.shared.getInterests())
+            .data(InterestRepository.shared.getInterests())
             .build();
     }
 
@@ -23,7 +22,7 @@ public class InterestController implements InterestService {
             .status(200)
             .message("SUCCESS")
             .info("all interest catgories")
-            .data(MockRepository.shared.getInterestCategories())
+            .data(InterestRepository.shared.getInterestCategories())
             .build();
     }
 

@@ -7,8 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class MessageReaction {
-    private int chatId;
-    private int messageId;
-    private int reactionId;
+public class Reaction {
+    private int id;
+    private String name;
 }

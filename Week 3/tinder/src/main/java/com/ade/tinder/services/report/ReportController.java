@@ -1,7 +1,7 @@
 package com.ade.tinder.services.report;
 
 import com.ade.tinder.BaseResponse;
-import com.ade.tinder.MockRepository;
+import com.ade.tinder.services.user.UserRepository;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -14,7 +14,7 @@ public class ReportController implements  ReportService {
             .status(200)
             .message("SUCCESS")
             .info("all report categories")
-            .data(MockRepository.shared.getReportCategories())
+            .data(ReportRepository.shared.getReportCategories())
             .build();
     }
 
@@ -24,7 +24,7 @@ public class ReportController implements  ReportService {
             .status(200)
             .message("SUCCESS")
             .info("all reports")
-            .data(MockRepository.shared.getReports())
+            .data(ReportRepository.shared.getReports())
             .build();
     }
 
@@ -47,7 +47,7 @@ public class ReportController implements  ReportService {
                 .data(null)
                 .build();
         }
-        MockRepository.shared.addNewReport(categoryId, reporterId, userId, body);
+        ReportRepository.shared.addNewReport(categoryId, reporterId, userId, body);
         return BaseResponse.builder()
             .status(200)
             .message("SUCCESS")
@@ -72,7 +72,7 @@ public class ReportController implements  ReportService {
                 .build();
         }
         try {
-            MockRepository.shared.cancelReport(reportId, reporterId);
+            ReportRepository.shared.cancelReport(reportId, reporterId);
         } catch (Exception e) {
             return BaseResponse.builder()
                 .status(500)

@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 public interface ReportService {
-    @GetMapping("/report-categories")
+    @GetMapping("/report-category/all")
     BaseResponse<Object> getAllReportCategories();
-    @GetMapping("/reports")
+    @GetMapping("/report/all")
     BaseResponse<Object> getAllReports();
     @PostMapping("/report")
     BaseResponse<Object> addNewReport(@RequestBody Map<String, Object> map);

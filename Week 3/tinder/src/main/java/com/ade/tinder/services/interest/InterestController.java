@@ -2,13 +2,12 @@ package com.ade.tinder.services.interest;
 
 import com.ade.tinder.BaseResponse;
 import com.ade.tinder.MockRepository;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class InterestController implements InterestService {
 
-    @GetMapping("interests")
+    @Override
     public BaseResponse<Object> getAllInterests() {
         return BaseResponse.builder()
             .status(200)
@@ -18,7 +17,7 @@ public class InterestController implements InterestService {
             .build();
     }
 
-    @GetMapping("interest-categories")
+    @Override
     public BaseResponse<Object> getAllInterestCategories() {
         return BaseResponse.builder()
             .status(200)

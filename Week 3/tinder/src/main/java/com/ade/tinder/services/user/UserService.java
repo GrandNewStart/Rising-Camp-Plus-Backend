@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 public interface UserService {
-    @GetMapping("/users")
+    @GetMapping("/user/all")
     BaseResponse<Object> getAllUsers();
     @GetMapping("/user/{userId}/likes-sent")
     BaseResponse<Object> getUserSentLikes(@PathVariable("userId")int userId);
@@ -15,4 +15,6 @@ public interface UserService {
     BaseResponse<Object> getUserInterests(@PathVariable("userId")int userId);
     @GetMapping("/user/{userId}/suggestions")
     BaseResponse<Object> getUserSuggestions(@PathVariable("userId")int userId);
+    @GetMapping("/user/{userId}/chats")
+    BaseResponse<Object> getUserChats(@PathVariable("userId")int userId);
 }

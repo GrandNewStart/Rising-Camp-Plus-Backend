@@ -2,6 +2,8 @@ package com.ade.tinder.services.user;
 
 import com.ade.tinder.BaseResponse;
 import com.ade.tinder.MockRepository;
+import com.ade.tinder.services.chat.ChatRepository;
+import com.ade.tinder.services.chat.models.Chat;
 import com.ade.tinder.services.interest.models.Interest;
 import com.ade.tinder.services.like.models.Like;
 import com.ade.tinder.services.suggestion.models.Suggestion;
@@ -16,7 +18,7 @@ import java.util.List;
 @RestController
 public class UserController implements UserService {
 
-    @GetMapping("/users")
+    @Override
     public BaseResponse<Object> getAllUsers() {
         return BaseResponse.builder()
             .status(200)
@@ -26,7 +28,7 @@ public class UserController implements UserService {
             .build();
     }
 
-    @GetMapping("/user/{userId}/likes-sent")
+    @Override
     public BaseResponse<Object> getUserSentLikes(@PathVariable("userId")int userId) {
         List<Like> data = MockRepository.shared.getLikes().stream()
             .filter(e->e.getFromUserId() == userId)
@@ -39,7 +41,7 @@ public class UserController implements UserService {
             .build();
     }
 
-    @GetMapping("/user/{userId}/likes-received")
+    @Override
     public BaseResponse<Object> getUserReceivedLikes(@PathVariable("userId")int userId) {
         List<Like> data = MockRepository.shared.getLikes().stream()
             .filter(e->e.getToUserId() == userId)
@@ -52,7 +54,7 @@ public class UserController implements UserService {
             .build();
     }
 
-    @GetMapping("/user/{userId}/interests")
+    @Override
     public BaseResponse<Object> getUserInterests(@PathVariable("userId")int userId) {
         List<UserInterest> userInterests = MockRepository.shared.getUserInterests().stream()
                 .filter(e->e.getUserId() == userId)
@@ -74,7 +76,7 @@ public class UserController implements UserService {
             .build();
     }
 
-    @GetMapping("/user/{userId}/suggestions")
+    @Override
     public BaseResponse<Object> getUserSuggestions(@PathVariable("userId")int userId) {
         List<Suggestion> data = MockRepository.shared.getSuggestions().stream()
                 .filter(e->e.getSuggestedFor() == userId)
@@ -85,6 +87,23 @@ public class UserController implements UserService {
                 .info("all suggestions for user " + userId)
                 .data(data)
                 .build();
+    }
+
+    @Override
+    public BaseResponse<Object> getUserChats(int userId) {
+        List<Chat> data = new ArrayList<>();
+        for (Chat chat : ChatRepository.shared.getChats()) {
+            List<Integer> users = List.of(chat.getUserAId(), chat.getUserBId());
+            if (users.contains(userId)) {
+                data.add(chat);
+            }
+        }
+        return BaseResponse.builder()
+            .status(200)
+            .message("SUCCESS")
+            .info("all chats for user " + userId)
+            .data(data)
+            .build();
     }
 
 }

@@ -6,11 +6,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 public interface LikeService {
-    @GetMapping("/likes")
+    @GetMapping("/like/all")
     BaseResponse<Object> getAllLikes();
-    @GetMapping(value = "/likes", params = {"user-a", "user-b"})
+    @GetMapping(value = "/like", params = {"user-a", "user-b"})
     BaseResponse<Object> getLikesBetweenUsers(@RequestParam("user-a")int userAId, @RequestParam("user-b")int userBId);
-    @RequestMapping("/matches")
+    @GetMapping("like/match/all")
     BaseResponse<Object> getAllMatches();
     @PostMapping("/like")
     BaseResponse<Object> addLike(@RequestBody Map<String, Object> requestData);

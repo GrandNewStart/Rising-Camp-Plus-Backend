@@ -4,8 +4,8 @@ import com.ade.tinder.BaseResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 
 public interface InterestService {
-    @GetMapping("interests")
+    @GetMapping("interest/all")
     BaseResponse<Object> getAllInterests();
-    @GetMapping("interest-categories")
+    @GetMapping("interest-category/all")
     BaseResponse<Object> getAllInterestCategories();
 }

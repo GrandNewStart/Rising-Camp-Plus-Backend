@@ -1,0 +1,19 @@
+package com.ade.tinder.services.chat;
+
+import com.ade.tinder.BaseResponse;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.Map;
+
+public interface ChatService {
+    @GetMapping("/chats")
+    BaseResponse<Object> getAllChats();
+    @GetMapping("/chat/{chatId}/messages")
+    BaseResponse<Object> getAllMessagesOfChat(@PathVariable("chatId")int chatId);
+
+    @PostMapping("/chat/message")
+    BaseResponse<Object> sendMessage(@RequestBody Map<String,Object> map);
+}

@@ -38,7 +38,6 @@ public class UserRepository {
             new User(20, 3, "user 20", "M", "2000-08-10", "bio 10", "F", 23, 25, "2023-04-19-00:00:00")
     );
 
-
     private List<UserInterest> userInterests = Arrays.asList(
         new UserInterest(1, 10),
         new UserInterest(1, 10),

@@ -7,7 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class UserInterest {
-    private int userId;
-    private int interestId;
+public class GetInterestRes {
+    private int id;
+    private int categoryId;
+    private String name;
 }

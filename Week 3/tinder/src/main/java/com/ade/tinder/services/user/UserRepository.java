@@ -4,11 +4,14 @@ import com.ade.tinder.services.user.models.User;
 import com.ade.tinder.services.user.models.UserInterest;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.stereotype.Component;
+
 import java.util.Arrays;
 import java.util.List;
 
 @Getter
 @Setter
+@Component
 public class UserRepository {
 
     public static UserRepository shared = new UserRepository();

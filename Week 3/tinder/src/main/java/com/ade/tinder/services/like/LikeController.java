@@ -1,6 +1,6 @@
 package com.ade.tinder.services.like;
 
-import com.ade.tinder.BaseResponse;
+import com.ade.tinder.config.BaseResponse;
 import com.ade.tinder.services.user.UserRepository;
 import com.ade.tinder.services.like.models.Like;
 import com.ade.tinder.services.like.models.Match;

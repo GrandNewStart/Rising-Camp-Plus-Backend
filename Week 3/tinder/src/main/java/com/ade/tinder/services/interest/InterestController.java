@@ -1,6 +1,6 @@
 package com.ade.tinder.services.interest;
 
-import com.ade.tinder.BaseResponse;
+import com.ade.tinder.config.BaseResponse;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController

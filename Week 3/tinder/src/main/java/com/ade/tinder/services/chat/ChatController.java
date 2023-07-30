@@ -1,6 +1,6 @@
 package com.ade.tinder.services.chat;
 
-import com.ade.tinder.BaseResponse;
+import com.ade.tinder.config.BaseResponse;
 import com.ade.tinder.services.chat.models.Chat;
 import com.ade.tinder.services.chat.models.Message;
 import com.ade.tinder.utils.DateUtils;

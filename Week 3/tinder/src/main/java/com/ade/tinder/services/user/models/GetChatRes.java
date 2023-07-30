@@ -7,7 +7,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class UserInterest {
-    private int userId;
-    private int interestId;
+public class GetChatRes {
+    private int id;
+    private int userAId;
+    private int userBId;
+    private int lastMessageId;
+    private boolean isDestroyed;
 }

@@ -1,109 +1,88 @@
 package com.ade.tinder.services.user;
 
-import com.ade.tinder.BaseResponse;
-import com.ade.tinder.services.chat.ChatRepository;
-import com.ade.tinder.services.chat.models.Chat;
-import com.ade.tinder.services.interest.InterestRepository;
-import com.ade.tinder.services.interest.models.Interest;
-import com.ade.tinder.services.like.LikeRepository;
-import com.ade.tinder.services.like.models.Like;
-import com.ade.tinder.services.suggestion.SuggestionRepository;
-import com.ade.tinder.services.suggestion.models.Suggestion;
-import com.ade.tinder.services.user.models.UserInterest;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
-import java.util.ArrayList;
+import com.ade.tinder.config.BaseException;
+import com.ade.tinder.config.BaseResponse;
+import com.ade.tinder.services.user.models.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
-public class UserController implements UserService {
+@RequestMapping("/users")
+public class UserController {
 
-    @Override
-    public BaseResponse<Object> getAllUsers() {
-        return BaseResponse.builder()
-            .status(200)
-            .message("SUCCESS")
-            .info("all users")
-            .data(UserRepository.shared.getUsers())
-            .build();
+    @Autowired
+    private UserProvider provider;
+
+    public UserController(UserProvider provider) {
+        this.provider = provider;
     }
 
-    @Override
-    public BaseResponse<Object> getUserSentLikes(@PathVariable("userId")int userId) {
-        List<Like> data = LikeRepository.shared.getLikes().stream()
-            .filter(e->e.getFromUserId() == userId)
-            .toList();
-        return BaseResponse.builder()
-            .status(200)
-            .message("SUCCESS")
-            .info("likes sent by user " + userId)
-            .data(data)
-            .build();
+    @ResponseBody
+    @GetMapping("")
+    public BaseResponse<List<GetUserRes>> getUsers() {
+        return new BaseResponse<>(this.provider.getUsers());
     }
 
-    @Override
-    public BaseResponse<Object> getUserReceivedLikes(@PathVariable("userId")int userId) {
-        List<Like> data = LikeRepository.shared.getLikes().stream()
-            .filter(e->e.getToUserId() == userId)
-            .toList();
-        return BaseResponse.builder()
-            .status(200)
-            .message("SUCCESS")
-            .info("likes received by user " + userId)
-            .data(data)
-            .build();
-    }
-
-    @Override
-    public BaseResponse<Object> getUserInterests(@PathVariable("userId")int userId) {
-        List<UserInterest> userInterests = UserRepository.shared.getUserInterests().stream()
-                .filter(e->e.getUserId() == userId)
-                .toList();
-        List<Interest> data = new ArrayList<>();
-        for (UserInterest userInterest : userInterests) {
-            for (Interest interest : InterestRepository.shared.getInterests()) {
-                if (userInterest.getCategoryId() == interest.getId()) {
-                    data.add(interest);
-                    break;
-                }
-            }
+    @ResponseBody
+    @GetMapping("/{id}")
+    public BaseResponse<GetUserRes> getUser(@PathVariable int id) {
+        try {
+            return new BaseResponse<>(this.provider.getUser(id));
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
         }
-        return BaseResponse.builder()
-            .status(200)
-            .message("SUCCESS")
-            .info("all interests of user " + userId)
-            .data(data)
-            .build();
     }
 
-    @Override
-    public BaseResponse<Object> getUserSuggestions(@PathVariable("userId")int userId) {
-        List<Suggestion> data = SuggestionRepository.shared.getSuggestions().stream()
-                .filter(e->e.getSuggestedFor() == userId)
-                .toList();
-        return BaseResponse.builder()
-                .status(200)
-                .message("SUCCESS")
-                .info("all suggestions for user " + userId)
-                .data(data)
-                .build();
-    }
-
-    @Override
-    public BaseResponse<Object> getUserChats(int userId) {
-        List<Chat> data = new ArrayList<>();
-        for (Chat chat : ChatRepository.shared.getChats()) {
-            List<Integer> users = List.of(chat.getUserAId(), chat.getUserBId());
-            if (users.contains(userId)) {
-                data.add(chat);
-            }
+    @ResponseBody
+    @GetMapping("/{id}/likes-sent")
+    public BaseResponse<List<GetLikeRes>> getUserSentLikes(@PathVariable int id) {
+        try {
+            return new BaseResponse<>(this.provider.getUserSentLikes(id));
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
         }
-        return BaseResponse.builder()
-            .status(200)
-            .message("SUCCESS")
-            .info("all chats for user " + userId)
-            .data(data)
-            .build();
+    }
+
+    @ResponseBody
+    @GetMapping("/{id}/likes-received")
+    public BaseResponse<List<GetLikeRes>> getUserReceivedLikes(@PathVariable int id) {
+        try {
+            return new BaseResponse<>(this.provider.getUserReceivedLikes(id));
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/{id}/interests")
+    public BaseResponse<List<GetInterestRes>> getUserInterests(@PathVariable int id) {
+        try {
+            return new BaseResponse<>(this.provider.getUserInterests(id));
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/{id}/suggestions")
+    public BaseResponse<List<GetSuggestionRes>> getUserSuggestions(@PathVariable int id) {
+        try {
+            return new BaseResponse<>(this.provider.getUserSuggestions(id));
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
+    }
+
+    @ResponseBody
+    @GetMapping("/{id}/chats")
+    public BaseResponse<List<GetChatRes>> getUserChats(@PathVariable int id) {
+        try {
+            return new BaseResponse<>(this.provider.getUserChats(id));
+        } catch(BaseException e) {
+            return new BaseResponse<>(e.getStatus());
+        }
     }
 
 }

@@ -5,9 +5,9 @@
 
 ## 핵심 개념 정리
 
-[01. JPA & Hibernate](./resources/1.%20JPA%20&%20Hibernate.md)
+[01. JPA & Hibernate](./resources/markdown-1.md)
 
-[02. Java 웹앱 만들기](./resources/2.%20Java%20웹앱%20만들기.md)
+[02. Java 웹앱 만들기](./resources/markdown-2.md)
 
 ## 진행 상황
 

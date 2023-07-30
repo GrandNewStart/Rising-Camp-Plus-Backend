@@ -1,8 +1,16 @@
 package com.ade.learnjpaandhibernate.course.models;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+@Entity
 public class Course {
+    @Id
     private long id;
+    //    @Column(name="name")
     private String name;
+    //    @Column(name="author")
     private String author;
 
     public long getId() {
@@ -42,3 +50,4 @@ public class Course {
         return "Course(id=" + this.id + ", name=" + this.name + ", author=" + this.author + ")";
     }
 }
+

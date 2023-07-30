@@ -1,15 +1,20 @@
-package com.ade.learnjpaandhibernate.course.jdbc;
+package com.ade.learnjpaandhibernate.course;
 
+import com.ade.learnjpaandhibernate.course.jdbc.CourseJDBCRepository;
+import com.ade.learnjpaandhibernate.course.jpa.CourseJPARepository;
 import com.ade.learnjpaandhibernate.course.models.Course;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CourseJDBCCommandLineRunner implements CommandLineRunner {
+public class CourseCommandLineRunner implements CommandLineRunner {
+
+//    @Autowired
+//    private CourseJDBCRepository repository;
 
     @Autowired
-    private CourseJDBCRepository repository;
+    private CourseJPARepository repository;
 
     @Override
     public void run(String... args) throws Exception {

@@ -5,7 +5,7 @@
 
 ## 핵심 개념 정리
 
-[1. JPA & Hibernate.md](./resources/1.%20JPA%20&%20Hibernate.md)
+[01. JPA & Hibernate](./resources/1.%20JPA%20&%20Hibernate.md)
 
 ## 진행 상황
 

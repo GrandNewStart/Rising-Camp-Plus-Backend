@@ -12,7 +12,7 @@
 ## 프로젝트 생성 & H2 콘솔 설정
 
 프로젝트 생성은 start.spring.io 에서 다음과 같이 설정하여 생성한다.
-![start.spring.io](./spring-initializr.png)
+![start.spring.io](./spring-initializr-1.png)
 application.properties 파일에 가서 다음 설정을 입력한다.
 ```
 (application.properties)

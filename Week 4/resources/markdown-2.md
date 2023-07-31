@@ -4,6 +4,7 @@
 
 ### 프로젝트 생성
 다음과 같은 설정으로 프로젝트를 생성한다.
+
 ![spring initializr](./spring-initializr-2.png)
 
 ---
@@ -53,6 +54,7 @@ public class HelloController {
 ```
 
 이렇게 하고 앱을 실행한다. 브라우저에 'localhost:8080/say-hello-jsp'를 치면 해당 HTML 파일이 렌더링 된 모습을 볼 수 있다.
+
 ![browser](./browser-1.png)
 
 ---
@@ -90,5 +92,49 @@ public class LogInController {
 }
 ```
 
-앱을 실행하고 브라우저에서 localhost:8080/login?name=Jinwoo를 호출하면 다음과 같은 화면이 뜰 것이다. 
+앱을 실행하고 브라우저에서 localhost:8080/login?name=Jinwoo를 호출하면 다음과 같은 화면이 뜰 것이다.
+ 
 ![browser](./browser-2.png)
+
+### 로깅하는 방법
+
+```java
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@Controller
+public class LogInController {
+
+    // org.slf4j의 Logger 객체를 만들어준다.
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
+    @RequestMapping(value = "login")
+    public String goToLogInPage(@RequestParam String name, ModelMap model) {
+        model.put("name", name);
+        // debug를 호출하면 로그 레벨이 'debug'일 때만 노출된다.
+        logger.debug("Request param is {}", name);
+        // info를 호출하면 로그 레벨이 'info'일 때만 노출된다.
+        logger.info("Request param is {}", name);
+        // 'warn' 레벨도 있다.
+        logger.warn("Request param is {}", name);
+        return "login";
+    }
+
+}
+```
+
+로그 레벨은 application.properties에서 클래스 단위로 설정할 수 있다.
+```
+(application.properties)
+
+logging.level.org.springframework=info // 전체에 대해선 info
+logging.level.com.ade.myfirstwebapp.login.LogInController=debug // LogInController에 대해선 debug
+```
+
+---
+
+### 

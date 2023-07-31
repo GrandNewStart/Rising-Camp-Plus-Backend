@@ -2,8 +2,11 @@
 
 ## 목표: 모던 스프링 부트 접근법을 통해 투두 리스트 웹앱을 만든다.
 
+### 프로젝트 생성
 다음과 같은 설정으로 프로젝트를 생성한다.
 ![spring initializr](./spring-initializr-2.png)
+
+---
 
 ### JSP로 리디렉션하여 웹페이지 띄우기
 
@@ -51,3 +54,41 @@ public class HelloController {
 
 이렇게 하고 앱을 실행한다. 브라우저에 'localhost:8080/say-hello-jsp'를 치면 해당 HTML 파일이 렌더링 된 모습을 볼 수 있다.
 ![browser](./browser-1.png)
+
+---
+
+### 로그인 기능 구현
+
+같은 방식으로 로그인 페이지를 만들어보자. src > main > resources > META-INF > resources > WEB-INF > jsp > login.jsp 파일을 만들고 다음과 같이 HTML을 입력하자. 여기서 'name'이라는 자바 변수를 가져다 쓰려고 한다. ${} 이렇게 변수를 표현하는 것을 Expression Language라고 한다. 그럼 이 name 값은 어디서 오는가.
+```html
+<html>
+    <head>
+        <title>Log In</title>
+    </head>
+    <body>
+        Welcome ${name}
+    </body>
+</html>
+```
+
+다음과 같이 ModelMap이라는 것을 이용한다. 아래 함수는 localhost:8080/login?name={name} 처럼 쿼리로 변수 name을 받고 있는데, 이 값을 그대로 ModelMap에 전달해주면 된다.
+```java
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@Controller
+public class LogInController {
+
+    @RequestMapping(value = "login")
+    public String goToLogInPage(@RequestParam String name, ModelMap model) {
+        model.put("name", name);;
+        return "login";
+    }
+
+}
+```
+
+앱을 실행하고 브라우저에서 localhost:8080/login?name=Jinwoo를 호출하면 다음과 같은 화면이 뜰 것이다. 
+!(browser)[./browser-2.png]

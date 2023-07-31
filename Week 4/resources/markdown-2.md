@@ -50,4 +50,4 @@ public class HelloController {
 ```
 
 이렇게 하고 앱을 실행한다. 브라우저에 'localhost:8080/say-hello-jsp'를 치면 해당 HTML 파일이 렌더링 된 모습을 볼 수 있다.
-![browser](/browser-1.png)
+![browser](./browser-1.png)

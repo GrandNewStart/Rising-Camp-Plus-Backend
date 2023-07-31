@@ -91,4 +91,4 @@ public class LogInController {
 ```
 
 앱을 실행하고 브라우저에서 localhost:8080/login?name=Jinwoo를 호출하면 다음과 같은 화면이 뜰 것이다. 
-!(browser)[./browser-2.png]
+![browser](./browser-2.png)

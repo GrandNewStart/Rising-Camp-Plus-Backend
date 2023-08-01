@@ -62,7 +62,9 @@ public class HelloController {
 ### 로그인 화면
 
 같은 방식으로 로그인 페이지를 만들어보자. src > main > resources > META-INF > resources > WEB-INF > jsp > login.jsp 파일을 만들고 다음과 같이 HTML을 입력하자. 여기서 'name'이라는 자바 변수를 가져다 쓰려고 한다. ${} 이렇게 변수를 표현하는 것을 Expression Language라고 한다. 그럼 이 name 값은 어디서 오는가.
-```html
+```jsp
+(welcome.jsp)
+
 <html>
     <head>
         <title>Log In</title>
@@ -97,7 +99,9 @@ public class LogInController {
 ![browser](./browser-2.png)
 
 이제 실제 입력창을 만들어보자. login.jsp를 다음과 같이 변경한다.
-```html
+```jsp
+(login.jsp)
+
 <html>
     <head>
         <title>Log In</title>
@@ -114,7 +118,9 @@ public class LogInController {
 ```
 
 로그인에 성공했을 때의 화면을 welcome.jsp로 다음과 같이 작성한다. name과 password 변수를 전달받는 것을 알 수 있다.
-```html
+```jsp
+(welcome.jsp)
+
 <html>
     <head>
         <title>Welcome</title>
@@ -218,6 +224,8 @@ public class LogInController {
 
 이제 화면은 좀 수정해주자. login 화면에서 제대로 크레덴셜을 입력하지 않으면 오류 메시지를 띄우도록 하자.
 ```jsp
+(login.jsp)
+
 <html>
     <head>
         <title>Log In</title>
@@ -236,6 +244,119 @@ public class LogInController {
 
 아무거나 입력하면 다음과 같은 결과를 확인할 수 있을 것이다.
 ![browser](./browser-3.png)
+
+---
+
+## 투두 리스트 만들기
+
+이제 로그인 화면과 웰컴 화면이 만들어졌으니 본격적으로 투두 리스트를 만들자. ToDo 객체는 다음과 같이 정의한다.
+```java
+public class ToDo {
+
+    private int id;
+    private String username;
+    private String description;
+    private LocalDate targetDate;
+    private boolean isDone;
+
+    public ToDo(int id, String username, String description, LocalDate targetDate, boolean isDone) {
+        this.id = id;
+        this.username = username;
+        this.description = description;
+        this.targetDate = targetDate;
+        this.isDone = isDone;
+    }
+
+    @Override
+    public String toString() {
+        return "ToDo{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", description='" + description + '\'' +
+                ", targetDate=" + targetDate +
+                ", isDone=" + isDone +
+                '}';
+    }
+}
+```
+
+ToDo에 관한 모든 비즈니스 로직을 처리하는 서비스 클래스, ToDoService는 다음과 같이 만든다. 추후에 데이터베이스를 넣겠지만 지금은 투두 리스트를 정적 배열로 임시로 표현한다.
+```java
+@Service
+public class ToDoService {
+
+    private static List<ToDo> todos = new ArrayList<>( );
+
+    static {
+        todos.add(new ToDo(1, "jinwoo", "Learn AWS", LocalDate.now().plusYears(1), false));
+        todos.add(new ToDo(2, "jinwoo", "Learn DevOps", LocalDate.now().plusYears(2), false));
+        todos.add(new ToDo(3, "jinwoo", "Learn Full Stack Dev", LocalDate.now().plusYears(3), false));
+    }
+
+    public List<ToDo> findByUserName(String username) {
+        return todos;
+    }
+    
+}
+```
+
+이제 컨트롤러 클래스, ToDoController는 다음과 같이 정의한다. /list-todos 라는 경로에 접속하면 listTodos.jsp 파일을 렌더링 하도록 하는 컨트롤러이다. 여기서 눈여겨 볼 부분은 @SessionAttributes 어노테이션인데, 이는 현재 세션으로부터 "name"이라는 이름의 변수를 사용하겠다는 의미이다. 이 "name" 변수는 이전 화면인 login.jsp에서 가져오게 될 것이다. 따라서 LogInController에도 @SessionAttributes("name") 어노테이션을 붙여주자.
+```java
+@Controller
+@SessionAttributes("name")
+public class ToDoController {
+
+    private ToDoService toDoService;
+
+    public ToDoController(ToDoService toDoService) {
+        super();
+        this.toDoService = toDoService;
+    }
+
+    @RequestMapping("/list-todos")
+    public String listAllTodos(ModelMap map) {
+        List<ToDo> todos = toDoService.findByUserName("jinwoo");
+        map.addAttribute("todos", todos);
+        return "listTodos";
+    }
+
+}
+```
+
+이제 화면을 만들 차례다. 우선 login > welcome > list-todo 화면의 흐름으로 되도록 welcome.jsp를 고쳐보자.
+```jsp
+(welcome.jsp)
+
+<html>
+    <head>
+        <title>Welcome</title>
+    </head>
+    <body>
+        <div>Welcome</div>
+        <div>Your name: ${name}</div>
+        <div><a href="list-todos">Manage</a> your todos</div> // 투두 리스트로 가는 하이퍼링크가 추가됐다.
+    </body>
+</html>
+```
+```jsp
+(listTodos.jsp)
+
+<html>
+    <head>
+        <title>List Todos</title>
+    </head>
+    <body>
+        <div>Welcome ${name}</div>
+        <div>Your Todos are: ${todos}</div>
+    </body>
+</html>
+```
+
+이제 다시 앱을 실행하고 로그인을 하면 웰컴 페이지는 다음과 같을 것이다.
+![browser](./browser-4.png)
+
+'Manage'를 클릭하여 이동한 투두 리스트 화면은 다음과 같을 것이다.
+![browser](./browser-5.png)
 
 ---
 

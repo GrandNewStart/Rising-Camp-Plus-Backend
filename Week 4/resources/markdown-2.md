@@ -37,7 +37,7 @@ spring.mvc.view.suffix=.jsp
 </html>
 ```
 
-4. 이제 다음과 같은 Controller 클래스를 만들자.
+4. 이제 다음과 같은 Controller 클래스를 만들자. sayHelloJSP 함수는 "hello"라는 jsp 파일의 이름을 반환한다. 그리하여 /say-hello-jsp 경로에 접속하면 자동으로 src > main > resources > META-INF > resources > WEB-INF > jsp > hello.jsp 파일이 렌더링 될 것이다.
 ```java
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -158,6 +158,84 @@ public class LogInController {
 
 ```
 
+---
+
+## 간단한 인증 서비스 만들기
+
+아이디와 패스워드를 입력받았으니 이의 유효성을 검사하여 서로 다른 동작을 하도록 처리해보자. 목표는 아이디가 "jinwoo", 패스워드가 "dummy"인지 아닌지를 체크하는 것이다. 이를 위한 별도의 서비스 클래스, AuthenticationService를 만든다. 주목할 점은, 이 클래스에 @Service 어노테이션을 붙였다는 것이다. 이는 스프링에게 이 컴포넌트는 비즈니스 로직을 수행하는 녀석임을 알리는 것이다.
+
+```java
+import org.springframework.stereotype.Service;
+
+@Service
+public class AuthenticationService {
+
+    public boolean authenticate(String username, String password) {
+        boolean isValidUserName = username.equals("jinwoo");
+        boolean isValidPassword = password.equalsIgnoreCase("dummy");
+        return isValidUserName && isValidPassword;
+    }
+
+}
+```
+
+그리고 다시 LogInController에 이 서비스를 데이터 변수로 넣는다. @Service 어노테이션을 통해 컴포넌트 선언을 하였으므로 생성자로 초기화하도록 하면 나머지는 스프링이 알아서 의존성을 주입해 줄 것이다. 
+```java
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@Controller
+public class LogInController {
+
+    ...
+
+    private final AuthenticationService authenticationService;
+
+    public LogInController(AuthenticationService authenticationService) {
+        super();
+        this.authenticationService = authenticationService;
+    }
+    
+    ...
+
+    @RequestMapping(value = "login", method = RequestMethod.POST)
+    public String goToWelcomePage(@RequestParam String name, @RequestParam String password, ModelMap map) {
+        if (this.authenticationService.authenticate(name, password)) {
+            map.put("name", name);
+            map.put("password", password);
+            return "welcome";
+        } else {
+            map.put("errorMessage", "Invalid credentials. Please try again.");
+            return "login";
+        }
+    }
+
+}
+```
+
+이제 화면은 좀 수정해주자. login 화면에서 제대로 크레덴셜을 입력하지 않으면 오류 메시지를 띄우도록 하자.
+```jsp
+<html>
+    <head>
+        <title>Log In</title>
+    </head>
+    <body>
+        Welcome
+        <pre>${errorMessage}</pre> // 이 부분이 추가됐다.
+        <form method="post">
+            Name: <input type="text" name="name"/>
+            Password: <input type="password" name="password"/>
+            <input type="submit">
+        </form>
+    </body>
+</html>
+```
+
+아무거나 입력하면 다음과 같은 결과를 확인할 수 있을 것이다.
+![browser](browser-3)
 ---
 
 ### 로깅하는 방법

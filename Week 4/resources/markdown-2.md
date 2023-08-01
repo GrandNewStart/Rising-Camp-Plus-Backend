@@ -235,7 +235,8 @@ public class LogInController {
 ```
 
 아무거나 입력하면 다음과 같은 결과를 확인할 수 있을 것이다.
-![browser](browser-3)
+![browser](./browser-3.png)
+
 ---
 
 ### 로깅하는 방법

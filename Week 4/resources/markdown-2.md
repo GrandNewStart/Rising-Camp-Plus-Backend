@@ -166,7 +166,7 @@ public class LogInController {
 
 ---
 
-## 간단한 인증 서비스 만들기
+### 간단한 인증 서비스 만들기
 
 아이디와 패스워드를 입력받았으니 이의 유효성을 검사하여 서로 다른 동작을 하도록 처리해보자. 목표는 아이디가 "jinwoo", 패스워드가 "dummy"인지 아닌지를 체크하는 것이다. 이를 위한 별도의 서비스 클래스, AuthenticationService를 만든다. 주목할 점은, 이 클래스에 @Service 어노테이션을 붙였다는 것이다. 이는 스프링에게 이 컴포넌트는 비즈니스 로직을 수행하는 녀석임을 알리는 것이다.
 
@@ -247,7 +247,7 @@ public class LogInController {
 
 ---
 
-## 투두 리스트 만들기
+### 투두 리스트 만들기
 
 이제 로그인 화면과 웰컴 화면이 만들어졌으니 본격적으로 투두 리스트를 만들자. ToDo 객체는 다음과 같이 정의한다.
 ```java
@@ -300,7 +300,7 @@ public class ToDoService {
 }
 ```
 
-이제 컨트롤러 클래스, ToDoController는 다음과 같이 정의한다. /list-todos 라는 경로에 접속하면 listTodos.jsp 파일을 렌더링 하도록 하는 컨트롤러이다. 여기서 눈여겨 볼 부분은 @SessionAttributes 어노테이션인데, 이는 현재 세션으로부터 "name"이라는 이름의 변수를 사용하겠다는 의미이다. 이 "name" 변수는 이전 화면인 login.jsp에서 가져오게 될 것이다. 따라서 LogInController에도 @SessionAttributes("name") 어노테이션을 붙여주자.
+이제 컨트롤러 클래스, ToDoController는 다음과 같이 정의한다. /list-todos 라는 경로에 접속하면 listTodos.jsp 파일을 렌더링 하도록 하는 컨트롤러이다. 여기서 눈여겨 볼 부분은 @SessionAttributes 어노테이션인데, 이는 현재 세션으로부터 "name"이라는 이름의 변수를 사용하겠다는 의미이다. 이 "name" 변수는 이전 화면인 login.jsp에서 가져오게 될 것이다. 따라서 LogInController에도 @SessionAttributes("name") 어노테이션을 붙여주자. 이렇게 여러 화면에서 공통적으로 사용하고자 하는 값은 세션에 보관하는 것이 좋다. 
 ```java
 @Controller
 @SessionAttributes("name")
@@ -355,7 +355,7 @@ public class ToDoController {
 이제 다시 앱을 실행하고 로그인을 하면 웰컴 페이지는 다음과 같을 것이다.
 ![browser](./browser-4.png)
 
-'Manage'를 클릭하여 이동한 투두 리스트 화면은 다음과 같을 것이다.
+'Manage'를 클릭하여 이동한 투두 리스트 화면은 다음과 같을 것이다. welcome.jsp에서 사용한 name 변수가 그대로 listTodos.jsp에서도 성공적으로 나타나고 있는 것을 확인할 수 있다.
 ![browser](./browser-5.png)
 
 ---

@@ -347,3 +347,61 @@ public User findUserById(@PathVariable int id) throws UserNotFoundException {
 ```
 이제 앱을 다시 실행하고 localhost:8080/users/222 같이 터무늬 없는 유저 아이디로 접속해보자. 상태코드 404가 뜨는 것을 확인할 수 있다.
 ![browser](./browser-13.png)
+
+여기서 한술 더 떠서, 다양한 예외를 모아서 한꺼번에 처리할 수 있는 클래스를 만들 수 있다. 다음 예제 코드를 보자. 우선 ErrorDetails라는, 모든 예외를 timestamp, message, details의 형식으로 표현할 수 있는 데이터 클래스를 만들었다.
+```java
+(ErrorDetails.java)
+
+public class ErrorDetails {
+
+    private LocalDateTime timestamp;
+    private String message;
+    private String details;
+
+    public ErrorDetails(LocalDateTime timestamp, String message, String details) {
+        this.timestamp = timestamp;
+        this.message = message;
+        this.details = details;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+}
+```
+
+다음으로 발생하는 예외별로 처리할 수 있는 메서드를 선언한 Handler 클래스이다. @ControllerAdvice는 모든 Controller 클래스에서 이 기능들을 사용하라는 뜻이다. 또 이 클래스의 각 메서드들은 @ExceptionHandler 라는 어노테이션을 가지는데 이 안에 받고자 하는 예외의 종류를 파라미터로 넣는다. Exception.class 이렇게 넣으면 모든 종류의 예외를 다 받는, 즉 기본 처리 메서드라는 뜻이 된다. 각 메서드들은 Exception과 WebReqeust 객체를 파라미터로 받으며 ResponseEntity<T> 객체를 반환한다. 이렇게 선언하면 특정 타입의 예외가 발생할 떄마다 해당 메서드들이 호출되어, 앱 전체에서 발생하는 예외를 일괄적으로 처리할 수 있다.
+```java
+@ControllerAdvice
+public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler(Exception.class)
+    public final ResponseEntity<ErrorDetails> handleAllException(Exception ex, WebRequest request) {
+        ErrorDetails details = new ErrorDetails(
+                LocalDateTime.now(),
+                ex.getMessage(),
+                request.getDescription(false)
+        );
+        return new ResponseEntity<>(details, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public final ResponseEntity<ErrorDetails> handleUserNotFoundException(Exception ex, WebRequest request) {
+        ErrorDetails details = new ErrorDetails(
+                LocalDateTime.now(),
+                ex.getMessage(),
+                request.getDescription(false)
+        );
+        return new ResponseEntity<>(details, HttpStatus.NOT_FOUND);
+    }
+
+}
+```

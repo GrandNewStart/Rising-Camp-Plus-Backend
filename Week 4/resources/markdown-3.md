@@ -133,6 +133,15 @@ public HelloWorldBean helloWorldBean(@PathVariable String name) {
     - PUT: 특정 리소스 전체를 수정할 때
     - PATCH: 특정 리소스의 일부를 수정할 때
     - DELETE: 특정 리소스를 삭제할 때
+    
+- 상태 코드
+    - 500: 서버 에러
+    - 400: 잘못된 요청
+    - 401: 권한 없음
+    - 404: 리소스를 찾을 수 없는 경우
+    - 200: 성공
+    - 201: 새로운 리소스가 생성됨
+    - 204: 리턴값이 없는 성공
 
 - 목표: User와 Post 리소스를 조회/생성/수정/삭제할 수 있는 REST API를 만들어보자.
     - Users API
@@ -301,4 +310,40 @@ public User saveUser(User user) {
 그리고 다시 localhost:8080/users에 접속하면 Dylan이 추가된 것을 확인할 수 있다.
 ![browser](./browser-12.png)
 
+여기서 예외처리 하는 법을 알아보자. 입력받은 아이디로 User를 찾으려고 할 때, 리스트에 없는 아이디일 수 있다. 이때 UserNotFound라는 유형의 예외를 처리하는 코드는 다음과 같다. 우선 UserNotFoundException 클래스를 다음과 같이 정의한다. @ResponseStatus 라는 어노테이션을 달고, 이 유형의 예외는 리소스를 찾지 못했을 때 발생하는 것이라고 선언을 해준다. 이는 HTTP 상태코드 404를 반환하도록 하는 설정이다.
+```java
+@ResponseStatus(code = HttpStatus.NOT_FOUND)
+public class UserNotFoundException extends RuntimeException {
+    public UserNotFoundException(String message) {
+        super(message);
+    }
+}
+```
 
+그리고 UserDaoService와 UserResource를 다음과 같이 수정하자.
+```java
+(UserDaoService.java)
+...
+public User findUserById(int id) {
+    return users.stream()
+            .filter(e->e.getId() == id)
+            .findFirst()
+            .orElse(null);
+}
+...
+```
+```java
+(UserResource.java)
+...
+@GetMapping("/users/{id}")
+public User findUserById(@PathVariable int id) throws UserNotFoundException {
+    User user = this.userDaoService.findUserById(id);
+    if (user == null) {
+        throw new UserNotFoundException("id: "+id);
+    }
+    return this.userDaoService.findUserById(id);
+}
+...
+```
+이제 앱을 다시 실행하고 localhost:8080/users/222 같이 터무늬 없는 유저 아이디로 접속해보자. 상태코드 404가 뜨는 것을 확인할 수 있다.
+![browser](./browser-13.png)

@@ -9,7 +9,9 @@
 
 [02. Java 웹앱 만들기](./resources/markdown-2.md)
 
-[03. Java REST API 만들기](./resources/markdown-3.md)
+[03. Java REST API 만들기 (1)](./resources/markdown-3.md)
+
+[03. Java REST API 만들기 (2)](./resources/markdown-4.md)
 
 ## 진행 상황
 

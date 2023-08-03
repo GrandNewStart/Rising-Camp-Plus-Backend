@@ -123,4 +123,24 @@ public HelloWorldBean helloWorldBean(@PathVariable String name) {
 앱을 실행시키고 'localhost:8080/hello-world/path-variable/hello'에 접속해보자. 다음과 같은 결과를 볼 수 있다.
 ![browser](./browser-9.png)
 
+---
 
+## 소셜 미디어 앱 REST API
+
+- 메서드 종류
+    - GET: 특정 리소스에 대한 세부 내용을 가져올 때
+    - POST: 새로운 리소스를 생성할 때
+    - PUT: 특정 리소스 전체를 수정할 때
+    - PATCH: 특정 리소스의 일부를 수정할 때
+    - DELETE: 특정 리소스를 삭제할 때
+
+- 목표: User와 Post 리소스를 조회/생성/수정/삭제할 수 있는 REST API를 만들어보자.
+    - Users API
+        - 모든 유저 조회: GET /users
+        - 새 유저 생성: POST /users
+        - 특정 유저 조회: GET /users/{id}
+        - 특정 유저 삭제: DELETE /users/{id}
+    - Posts API
+        - 특정 유저의 모든 글 조회: GET /users/{id}/posts
+        - 특정 유저의 새 글 생성: POST /users/{id}/posts
+        - 특정 유저의 특정 글 조회: GET /users/{id}/posts/{post_id}

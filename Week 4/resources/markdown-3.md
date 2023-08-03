@@ -277,7 +277,7 @@ public User findUserById(@PathVariable int id) {
 효과는 훌륭했다.
 ![browser](./browser-11.png)
 
-마지막으로 User를 추가하는 POST /users API를 만들어보자. UserDaoService에 다음과 같은 메서드를 추가한다.
+User를 추가하는 POST /users API를 만들어보자. UserDaoService에 다음과 같은 메서드를 추가한다.
 ```java
 (UserDaoService.java)
 ...
@@ -403,5 +403,99 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(details, HttpStatus.NOT_FOUND);
     }
 
+}
+```
+
+유저를 삭제하는 DELETE /users/{id} API를 만들어보자. 아주 간단하다. UserDaoService와 UserResource에 다음 메서드들을 추가하면 된다. 실행 결과는 생략한다.
+```java
+(UserDaoService.java)
+...
+public void deleteById(int id) {
+    users.removeIf(e->e.getId()==id);
+}
+...
+```
+```java
+(UserResource.java)
+...
+@DeleteMapping("/users/{id}")
+public void deleteUser(@PathVariable int id) {
+    this.userDaoService.deleteById(id);
+}
+...
+```
+
+다음으로 유효성 체크를 구현해보자. 우선 build.gradle에 새로운 의존성을 추가해야 한다. 다음 한 줄을 추가하자.
+```groovy
+(build.gradle)
+
+dependencies {
+    ...
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    ...
+}
+```
+
+gradle 동기화 후, User 클래스로 돌아가 유효성 검사를 걸고자 하는 필드, name과 birthDate에 다음과 같은 어노테이션을 추가한다. @Size는 이 필드의 길이는 최소 2가 되어야 하며, 이를 어길 시, "Name should be at least 2 characters"와 같은 에러 메시지를 반환한다는 의미이다. 또 @Past는 이 필드가 반드시 현재 시점보다 이전을 나타내야 하며, 이를 어길 시 "Birthdate should be in the past"와 같은 메시지를 반환한다는 의미이다.
+```java
+(User.java)
+
+...
+@Size(min = 2, message = "Name should be at least 2 characters")
+private String name;
+
+@Past(message = "Birthdate should be in the past")
+private LocalDate birthDate;
+...
+```
+
+이제 이 제약 조건들을 활성화하려면 UserResource의 createUser 메서드에도 어노테이션을 하나 더 추가해야 한다. 메서드의 파라미터인 User user에 @Valid 어노테이션이 붙은 것을 알 수 있다. 이는, 이 필드에 대해 유효성 검사를 하겠다는 의미이다.
+```java
+(UserResource.java)
+
+...
+@PostMapping("/users")
+public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
+...
+```
+
+다음으로 새로 발생할 예외들에 대한 처리를 추가해주자. CustomExceptionHandler에 다음 메서드를 오버라이드 하여 구현하자. 이 메서드는 유효성 검사에서 탈락한, 올바르지 않은 파라미터가 입력되었을 때 발생되는 예외를 처리한다. 이제 나머지는 스프링이 알아서 할 것이다.
+```java
+(CustomExceptionHandler.java)
+
+...
+@Override
+protected ResponseEntity<Object> handleMethodArgumentNotValid(
+    MethodArgumentNotValidException ex, 
+    HttpHeaders headers, 
+    HttpStatusCode status,
+    WebRequest request
+) {
+    ErrorDetails details = new ErrorDetails(
+            LocalDateTime.now(),
+            "Total Error: " + ex.getErrorCount() + ", First Error: " + ex.getFieldError().getDefaultMessage(),
+            request.getDescription(false)
+    );
+    return new ResponseEntity<>(details, HttpStatus.BAD_REQUEST);
+}
+...
+```
+
+이대로 앱을 실행하고 다음과 같이 제약 조건을 어기는 요청을 날려보자.
+```json
+// POST localhost:8080/users
+
+{
+    "name": "V",
+    "birthDate": "9999-12-31"
+}
+```
+
+그 결과는 다음과 같을 것이다.
+```json
+{
+    "timestamp": "2023-08-04T00:26:14.031196",
+    "message": "Total Error: 2, First Error: Birthdate should be in the past",
+    "details": "uri=/users"
 }
 ```

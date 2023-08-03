@@ -9,6 +9,8 @@
 
 [02. Java 웹앱 만들기](./resources/markdown-2.md)
 
+[03. Java REST API 만들기](./resources/markdown-3.md)
+
 ## 진행 상황
 
 - 생각보다 너무 많은 강의 분량 & 실습 분량으로 목요일까지 강의 전부 수강 예정. 길어지면 금요일까지.

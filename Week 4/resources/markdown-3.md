@@ -144,3 +144,161 @@ public HelloWorldBean helloWorldBean(@PathVariable String name) {
         - 특정 유저의 모든 글 조회: GET /users/{id}/posts
         - 특정 유저의 새 글 생성: POST /users/{id}/posts
         - 특정 유저의 특정 글 조회: GET /users/{id}/posts/{post_id}
+
+### Users API
+
+우선 전체 유저 목록을 조회하는 GET /users API를 먼저 만들어보자. 다음과 같이 User 데이터 클래스를 먼저 정의한다.
+```java
+public class User {
+
+    private int id;
+
+    private String name;
+
+    private LocalDate birthDate;
+
+    public User(int id, String name, LocalDate birthDate) {
+        this.id = id;
+        this.name = name;
+        this.birthDate = birthDate;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    @Override
+    public String toString() {
+        return "User[ id=" + id + ", name=" + name + ", birthDate=" + birthDate + " ]";
+    }
+}
+```
+
+그리고 리소스를 읽고 쓰는 기능을 담당하는 서비스 클래스, UserDaoService를 다음과 같이 정의한다. 최종적으로는 DB와 연동하겠지만 일단은 정적으로 선언한 리스트를 데이터 소스로 사용하도록 한다.
+```java
+@Component
+public class UserDaoService {
+
+    private static List<User> users = new ArrayList<>();
+    
+    private static int userCount = 0;
+
+    static {
+        users.add(new User(++userCount, "Adam", LocalDate.now().minusYears(30)));
+        users.add(new User(++userCount, "Bill", LocalDate.now().minusYears(20)));
+        users.add(new User(++userCount, "Charlie", LocalDate.now().minusYears(25)));
+    }
+
+    public List<User> findAll() {
+        return users;
+    }
+
+}
+``` 
+
+마지막으로 다음과 같은 컨트롤러 클래스 UserResource를 작성한다.
+```java
+@RestController
+public class UserResource {
+
+    private final UserDaoService userDaoService;
+
+    public UserResource(UserDaoService userDaoService) {
+        this.userDaoService = userDaoService;
+    }
+
+    @GetMapping("/users")
+    public List<User> findAllUsers() {
+        return this.userDaoService.findAll();
+    }
+
+}
+```
+
+이제 앱을 실행하고 'localhost:8080/users'에 접속하면 다음과 같은 결과가 나타날 것이다. 그러면 뼈대는 완성한 것이다.
+![browser](./browser-10.png)
+
+그럼 경로 변수를 받아 특정 유저를 반환하는 GET /users/{id} API를 만들어보자. 우선 UserDaoService에 다음 메서드를 추가한다.
+```java
+(UserDaoService.java)
+...
+
+public User findUserById(int id) {
+    return users.stream()
+            .filter(e->e.getId() == id)
+            .findFirst()
+            .get();
+}
+
+...
+```
+그리고 UserResource에 다음과 같은 REST API 메서드를 추가한다.
+```java
+(UserResource.java)
+...
+
+@GetMapping("/users/{id}")
+public User findUserById(@PathVariable int id) {
+    return this.userDaoService.findUserById(id);
+}
+
+...
+```
+
+효과는 훌륭했다.
+![browser](./browser-11.png)
+
+마지막으로 User를 추가하는 POST /users API를 만들어보자. UserDaoService에 다음과 같은 메서드를 추가한다.
+```java
+(UserDaoService.java)
+...
+
+public User saveUser(User user) {
+    user.setId(++userCount);
+    users.add(user);
+    return user;
+}
+
+...
+```
+
+그리고 UserResource에 다음 메서드를 추가한다.
+```java
+(UserResource)
+...
+
+@PostMapping("/users")
+    public void createUser(@RequestBody User user) {
+    this.userDaoService.saveUser(user);
+}
+
+...
+```
+
+이번엔 메서드 타입이 POST이므로 포스트맨 등을 통해 리퀘스트를 날린 후 결과를 확인하자. "createUser" 메서드가 void를 반환하기 때문에 별다른 응답 값은 없는 것을 확인할 수 있다.
+![postman](./postman-1.png)
+
+그리고 다시 localhost:8080/users에 접속하면 Dylan이 추가된 것을 확인할 수 있다.
+![browser](./browser-12.png)
+
+

@@ -40,6 +40,8 @@ public class HelloWorldController {
 @RestController
 public class HelloWorldController {
 
+    // GET 메서드의 경우, 선언을 생략해도 된다.
+    // @RequestMapping("/hello-world") 이렇게만 해줘도 된다는 얘기 
     @RequestMapping(method = RequestMethod.GET, path = "/hello-world")
     public String helloWorld() {
         return "Hello World!";
@@ -50,5 +52,75 @@ public class HelloWorldController {
 
 이제 앱을 실행시키고 localhost:8080/hello-world로 접속하면 다음과 같이 "Hello World!"가 반환되는 것을 확인할 수 있을 것이다.
 ![browser](./browser-7.png)
+
+이번엔 스트링이 아니라 JSON 데이터를 반환하는 REST API를 만들어보자. 다음과 같이 HelloWorldController에 메서드를 추가한다.
+```java
+@RestController
+public class HelloWorldController {
+
+    @RequestMapping("/hello-world")
+    public String helloWorld() {
+        return "Hello World!";
+    }
+
+    @RequestMapping( "/hello-world-bean")
+    public HelloWorldBean helloWorldBean() {
+        return new HelloWorldBean("Hello World!");
+    }
+
+}
+```
+
+여기서 HelloWorldBean이라는 클래스를 새로 만들어준다. HelloWorldBean은 다음과 같이 작성헌다.
+```java
+public class HelloWorldBean {
+
+    private String message;
+
+    public HelloWorldBean(String message) {
+        this.message = message;
+    }
+
+    // JSON으로 변환하기 위해 getter는 반드시 구현해야 한다. 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public String toString() {
+        return "HelloWorldBean [message=" + message + "]";
+    }
+
+}
+```
+
+이제 다시 앱을 실행하고 localhost:8080/hello-world-bean에 접속하면 다음과 같은 결과가 나올 것이다.
+![browser](./browser-8.png)
+
+모든 HTTP 요청은 DispatcherServlet이라는 곳으로 가장 먼저 전달된다. DispatcherServlet의 URL은 '/'으로, 현재 도메인의 가장 기본이 되는 경로라고 할 수 있다. DispatcherServlet은 전달받은 요청의 URL을 확인하고 그 경로에 해당하는 적절한 메서드로 연결해준다. 위의 경우, "/hello-world-bean"의 경로를 전달받았으니 그에 해당하는 메서드, 'helloWorldBean'을 실행시킨 것이다. 
+
+DispatcherServlet은 Spring Boot가 자동으로 설정한 것이다. 이러한 작용을 Auto Configuration이라 하는데, 이에 관련된 클래스로 DispatcherServletAutoConfiguration이 있다. HelloWorldBean 객체가 자동으로 JSON으로 변환되는 것 역시 Auto Configuration의 일종이다. JacksonHttpMessageConverter라는 Spring Boot 하위의 컨버터가 자동으로 작동하는 것이다. 그리고 만약 "/hello-world-bean-1" 처럼 존재하지 않는 경로를 접속했을 때 뜨는 오류화면도 Auto Configuration에 의해 작동하는 것인데 이에 관련된 클래스는 ErrorMvcAutoConfiguration이다. 이처럼 편한 Auto Configuration은 다양한 Spring Boot Starter Project에 의해 제공된다.
+
+이처럼 Spring Boot는 각종 Starter Project와 Auto Configuration을 통해 많은 요구사항들을 우리가 일일히 신경쓰지 않아도 되도록 만들어준다. 
+
+이번엔 경로 변수를 받는 API를 만들어보자. HelloWorldController에 다음과 같은 메서드를 추가한다. 메서드 파라미터에 @PathVariable 어노테이션을 붙이고 @RequestMapping의 path 속성에 해당 파라미터 이름을 {} 안에 넣으면 경로로 인식한다.
+```java
+(HelloWorldController.java)
+...
+
+@RequestMapping(value = "/hello-world/path-variable/{name}")
+public HelloWorldBean helloWorldBean(@PathVariable String name) {
+    return new HelloWorldBean(String.format("Hello, World, %s", name));
+}
+
+...
+```
+
+앱을 실행시키고 'localhost:8080/hello-world/path-variable/hello'에 접속해보자. 다음과 같은 결과를 볼 수 있다.
+![browser](./browser-9.png)
 
 

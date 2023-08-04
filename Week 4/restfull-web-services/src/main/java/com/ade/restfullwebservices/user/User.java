@@ -1,13 +1,19 @@
 package com.ade.restfullwebservices.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
+@Entity(name = "user_details")
 public class User {
 
+    @Id
+    @GeneratedValue
     private int id;
 
     @Size(min = 2, message = "Name should be at least 2 characters")
@@ -23,6 +29,8 @@ public class User {
         this.name = name;
         this.birthDate = birthDate;
     }
+
+    public User() {}
 
     public int getId() {
         return id;

@@ -246,5 +246,5 @@ dependencies {
 Spring Boot Actuator는 다양한 엔드포인트를 제공하는데, 대표적으로 beans, health, metrics, mappings가 있다.
 - beans: 앱 내의 모든 Spring Bean의 정보를 조회
 - health: 앱의 구동 상태 정보
-- metrics: 
+- metrics: 수치화된 모든 모니터링 데이터의 목록
 - mappings: 리퀘스트 맵핑 관련된 정보

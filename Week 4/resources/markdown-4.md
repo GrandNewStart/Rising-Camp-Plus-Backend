@@ -75,3 +75,176 @@ good.morning.message="Good Morning"
 
 ![postman](./postman-3.png)
 ![postman](./postman-4.png)
+
+---
+
+## 버전 관리
+
+상황에 따라 API의 명세나 기능을 변경해야 할 때가 있다. 이미 배포된 서비스의 API를 맘대로 바꿀 순 없으니 버전 관리가 중요해질 수 밖에 없다. API의 버전을 나누는 법은 여러가지가 있다. 완벽한 방법은 없으며 상황에 따라 본인이 좋아하는 방법을 사용하면 된다.
+
+- URI:
+    - "/v1/users" 
+    - "/v2/users"
+- 파라미터
+    - "/users?version=1"
+    - "/users?version=2"
+- 헤더
+    - X-API-VERSION=1
+    - X-API-VERSION=2
+- Media Type(content negotiation or accept header)
+    - procuces=application/vnd.company.app-v1+json
+    - procuces=application/vnd.company.app-v2+json
+    
+---
+
+## HATEOAS (Hypermedia as the Engine of Application State)
+
+웹/앱 서비스는 API를 통해 유저에게 데이터를 제공하고 이에 대해 가능한 동작들을 제공한다. 하지만 단순히 동작 하나에서 끝나지 않고 그 이후에 이어질 동작까지 같이 제시한다면 이것을 HATEOAS라고 할 수 있다. 이는 직접 구현하는 방법도 있지만 유지/보수하기 어렵다. 보통은 HAL(JSON Hypertext Application Language)라 부르는 표준에 따라 구현한다. 이를 통해 리소스들 사이에 일관되고 알기 쉬운 하이퍼링크를 제공할 수 있다. HAL은 다음과 같이 생겼다. 
+
+```json
+{
+    "name": "Adam",
+    "birhtDate": "2022-02-02",
+    "_links": {
+        "all-users": {
+            "href": "http://localhost:8080/users"
+        }
+    }
+}
+```
+
+Spring에서 HATEOAS는 다음과 같은 의존성을 추가함으로써 간편하게 구현할 수 있는데, 필요하면 직접 찾아보고 구현할 것.
+```groovy
+implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+```
+
+---
+
+## 정적 필터링
+
+직렬화(Serialization)란 객체를 스트림(JSON 등)으로 전환하는 과정이다. Java에서 가장 많이 쓰이는 JSON 직렬화 라이브러리는 Jackson이다. 지금까지 API에서 자동으로 JSON 변환이 일어나는 것이 다 Jackson 덕분이었다. 그리고 여기에 커스터마이징이 가능하다. 예를 들어 키의 이름을 변경하려면 @JsonProperty("{key_name}")와 같은 어노테이션을 붙여주면 된다.
+```
+@JsonProperty("user_name")
+private String name;
+
+// 원래 name으로 표시되던 키 이름이 user_name으로 바뀌어 반환된다.
+```    
+
+또한 반환된는 아이템의 리스트가 있을 경우, 이를 필터링하는 기능도 존재한다. 필터링에는 정적 필터링과 동적 필터링 두가지가 존재한다. 예시를 위해 다음과 같은 엔티티 클래스와 컨트롤러 클래스를 만들어보자.
+```java
+public class SomeBean {
+
+    private String field1;
+    private String field2;
+    private String field3;
+    
+    ... // 생성자와 getter-setter를 구현했다고 가정
+    
+}
+
+@RestController
+public class FilteringController {
+
+    @GetMapping("/filtering")
+    public SomeBean filtering() {
+        return new SomeBean("value1", "value2", "value3");
+    }
+
+    @GetMapping("/filtering-list")
+    public List<SomeBean> filteringList() {
+        return Arrays.asList(
+            new SomeBean("value1", "value2", "value3"),
+            new SomeBean("value4", "value5", "value6"),
+            new SomeBean("value7", "value8", "value9")
+        );
+    }
+
+}
+```
+
+이제 앱을 실행하고 localhost:8080/filtering에 접속하면 "value1", "value2", "value3"이 모두 뜰 것이다. 그런데 SomeBean에서 'field1' 필드에 대해 @JsonIgnore라는 어노테이션을 붙여보자.
+```java
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+public class SomeBean {
+
+    @JsonIgnore
+    private String field1;
+    private String field2;
+    private String field3;
+    
+    ... // 생성자와 getter-setter를 구현했다고 가정
+    
+}
+
+```
+그럼 다시 실행했을 때, "value1"은 빠진 채로, "value2"와 "value3"만이 출력되는 것을 확인할 수 있을 것이다. 각각의 필드에 어노테이션을 붙이는 대신 @JsonIgnoreProperties 라는 어노테이션을 클래스 앞에 붙여서 여러 필드를 한꺼번에 필터링 할 수도 있다. 뿐만아니라, localhost:8080/filtering-list에 접속해도 "field1"에 해당하는 값들만 빠져서 출력되는 것을 확인할 수 있을 것이다. 이러한 동작을 정적 필터링이라고 한다. @JsonIgnore나 @JsonIgnoreProperties와 같은 어노테이션으로 구현하는 정적 필터링은 이처럼 어떤 상황에서든 특정 필드를 출력되지 않도록 해준다.
+
+동적 필터는 기능은 동일하지만 구현 방법이 다르다. 위의 FilteringController 클래스의 getFiltering() 메서드를 다음과 같이 수정해보자.
+```java
+...
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import org.springframework.http.converter.json.MappingJacksonValue;
+
+@RestController
+public class FilteringController {
+
+    @GetMapping("/filtering")
+    public MappingJacksonValue filtering() {
+        SomeBean someBean = new SomeBean("value1", "value2", "value3");
+        MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(someBean);
+        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter.filterOutAllExcept("field1", "field3");
+        FilterProvider filters = new SimpleFilterProvider().addFilter("SomeBeanFilter", filter);
+        mappingJacksonValue.setFilters(filters);
+        return mappingJacksonValue;
+    }
+    
+    ...
+}
+```
+
+굉장히 많은 클래스들이 import되었지만 동작은 간단하다. 클래스나 필드에 정적으로 선언되어있던 필터 기능을 데이터를 반환할 시점에 구현하여, 원하는 타이밍에만 동작하도록 동적 속성을 부여한 것이다. 위 메서드는 "field1"과 "field3"만 반환되도록 필터링을 동적으로 추가한 것이다. 실행해보면 "field2" 값은 생략된 것을 확인할 수 있을 것이다. 그리고 동적 필터링이기에 수정되지 않은 localhost:8080/filtering-list API의 경우, 모든 필드가 완전히 출력되는 것도 확인할 수 있을 것이다.
+
+---
+
+## Spring Boot Actuator
+
+Spring Boot Actuator는 동작중인 애플리케이션을 모니터링할 수 있게 해주는 라이브러리이다. 다음과 같이 의존성을 추가하자.
+```groovy
+(build.gradle)
+...
+dependencies {
+    ...
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    ...
+}
+```
+
+그리고 앱을 실행한 후, localhost:8080/actuator에 접속하면 다음과 같은 JSON을 볼 수 있을 것이다. href에 있는 링크를 타고 들어가면 각각의 항목에 대한 세부 정보를 확인할 수 있다. 기본적으론 아래와 같이 3개의 항목만 있지만 application.properties에 설정을 바꿔주면 모니터링 항목을 늘릴 수 있다. application.properties에 'management.endpoints.web.exposure.include=*' 한줄을 추가하면 모든 항목을 확인할 수 있다.
+```json
+{
+    "_links": {
+        "self": {
+            "href": "http://localhost:8080/actuator",
+            "templated": false
+        },
+        "health": {
+            "href": "http://localhost:8080/actuator/health",
+            "templated": false
+        },
+        "health-path": {
+            "href": "http://localhost:8080/actuator/health/{*path}",
+            "templated": true
+        }
+    }
+}
+```
+ 
+
+Spring Boot Actuator는 다양한 엔드포인트를 제공하는데, 대표적으로 beans, health, metrics, mappings가 있다.
+- beans: 앱 내의 모든 Spring Bean의 정보를 조회
+- health: 앱의 구동 상태 정보
+- metrics: 
+- mappings: 리퀘스트 맵핑 관련된 정보

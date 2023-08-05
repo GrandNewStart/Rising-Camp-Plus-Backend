@@ -1,29 +1,28 @@
 package com.ade.tinder.services.interest;
 
 import com.ade.tinder.config.BaseResponse;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
-public class InterestController implements InterestService {
+@RestController("/interests")
+public class InterestController {
 
-    @Override
-    public BaseResponse<Object> getAllInterests() {
-        return BaseResponse.builder()
-            .status(200)
-            .message("SUCCESS")
-            .info("all interests")
-            .data(InterestRepository.shared.getInterests())
-            .build();
+    private final InterestRepository interestRepository;
+    private final InterestCategoryRepository interestCategoryRepository;
+
+    public InterestController(InterestRepository interestRepository, InterestCategoryRepository interestCategoryRepository) {
+        this.interestRepository = interestRepository;
+        this.interestCategoryRepository = interestCategoryRepository;
     }
 
-    @Override
+    @GetMapping("")
+    public BaseResponse<Object> getAllInterests() {
+        return new BaseResponse<>(this.interestRepository.findAll());
+    }
+
+    @GetMapping("/categories")
     public BaseResponse<Object> getAllInterestCategories() {
-        return BaseResponse.builder()
-            .status(200)
-            .message("SUCCESS")
-            .info("all interest catgories")
-            .data(InterestRepository.shared.getInterestCategories())
-            .build();
+        return new BaseResponse<>(this.interestCategoryRepository.findAll());
     }
 
 }

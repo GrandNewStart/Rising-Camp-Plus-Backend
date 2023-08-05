@@ -1,88 +1,95 @@
 package com.ade.tinder.services.user;
 
-import com.ade.tinder.config.BaseException;
 import com.ade.tinder.config.BaseResponse;
-import com.ade.tinder.services.user.models.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.ade.tinder.config.BaseResponseStatus;
+import com.ade.tinder.services.chat.Chat;
+import com.ade.tinder.services.interest.Interest;
+import com.ade.tinder.services.like.LikeRepository;
+import com.ade.tinder.services.like.Like;
+import com.ade.tinder.services.suggestion.SuggestionRepository;
+import com.ade.tinder.services.suggestion.Suggestion;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    private UserProvider provider;
+    private final UserRepository userRepository;
+    private final LikeRepository likeRepository;
+    private final SuggestionRepository suggestionRepository;
 
-    public UserController(UserProvider provider) {
-        this.provider = provider;
+    public UserController(UserRepository userRepository, LikeRepository likeRepository, SuggestionRepository suggestionRepository) {
+        this.userRepository = userRepository;
+        this.likeRepository = likeRepository;
+        this.suggestionRepository = suggestionRepository;
     }
 
     @ResponseBody
     @GetMapping("")
-    public BaseResponse<List<GetUserRes>> getUsers() {
-        return new BaseResponse<>(this.provider.getUsers());
+    public BaseResponse<List<User>> getUsers() {
+        return new BaseResponse<>(this.userRepository.findAll());
     }
 
     @ResponseBody
     @GetMapping("/{id}")
-    public BaseResponse<GetUserRes> getUser(@PathVariable int id) {
-        try {
-            return new BaseResponse<>(this.provider.getUser(id));
-        } catch(BaseException e) {
-            return new BaseResponse<>(e.getStatus());
+    public BaseResponse<User> getUser(@PathVariable int id) {
+        Optional<User> user = this.userRepository.findById(id);
+        if (user.isEmpty()) {
+            return new BaseResponse<>(BaseResponseStatus.NO_SUCH_ITEM);
         }
+        return new BaseResponse<>(user.get());
     }
 
     @ResponseBody
     @GetMapping("/{id}/likes-sent")
-    public BaseResponse<List<GetLikeRes>> getUserSentLikes(@PathVariable int id) {
-        try {
-            return new BaseResponse<>(this.provider.getUserSentLikes(id));
-        } catch(BaseException e) {
-            return new BaseResponse<>(e.getStatus());
+    public BaseResponse<List<Like>> getUserSentLikes(@PathVariable int id) {
+        Optional<User> user = this.userRepository.findById(id);
+        if (user.isEmpty()) {
+            return new BaseResponse<>(BaseResponseStatus.NO_SUCH_ITEM);
         }
+        return new BaseResponse<>(user.get().getLikesSent());
     }
 
     @ResponseBody
     @GetMapping("/{id}/likes-received")
-    public BaseResponse<List<GetLikeRes>> getUserReceivedLikes(@PathVariable int id) {
-        try {
-            return new BaseResponse<>(this.provider.getUserReceivedLikes(id));
-        } catch(BaseException e) {
-            return new BaseResponse<>(e.getStatus());
+    public BaseResponse<List<Like>> getUserReceivedLikes(@PathVariable int id) {
+        Optional<User> user = this.userRepository.findById(id);
+        if (user.isEmpty()) {
+            return new BaseResponse<>(BaseResponseStatus.NO_SUCH_ITEM);
         }
+        return new BaseResponse<>(user.get().getLikesReceived());
     }
 
     @ResponseBody
     @GetMapping("/{id}/interests")
-    public BaseResponse<List<GetInterestRes>> getUserInterests(@PathVariable int id) {
-        try {
-            return new BaseResponse<>(this.provider.getUserInterests(id));
-        } catch(BaseException e) {
-            return new BaseResponse<>(e.getStatus());
+    public BaseResponse<List<Interest>> getUserInterests(@PathVariable int id) {
+        Optional<User> user = this.userRepository.findById(id);
+        if (user.isEmpty()) {
+            return new BaseResponse<>(BaseResponseStatus.NO_SUCH_ITEM);
         }
+        return new BaseResponse<>(user.get().getInterests());
     }
 
     @ResponseBody
     @GetMapping("/{id}/suggestions")
-    public BaseResponse<List<GetSuggestionRes>> getUserSuggestions(@PathVariable int id) {
-        try {
-            return new BaseResponse<>(this.provider.getUserSuggestions(id));
-        } catch(BaseException e) {
-            return new BaseResponse<>(e.getStatus());
+    public BaseResponse<List<Suggestion>> getUserSuggestions(@PathVariable int id) {
+        Optional<User> user = this.userRepository.findById(id);
+        if (user.isEmpty()) {
+            return new BaseResponse<>(BaseResponseStatus.NO_SUCH_ITEM);
         }
+        return new BaseResponse<>(user.get().getSuggestions());
     }
 
     @ResponseBody
     @GetMapping("/{id}/chats")
-    public BaseResponse<List<GetChatRes>> getUserChats(@PathVariable int id) {
-        try {
-            return new BaseResponse<>(this.provider.getUserChats(id));
-        } catch(BaseException e) {
-            return new BaseResponse<>(e.getStatus());
+    public BaseResponse<List<Chat>> getUserChats(@PathVariable int id) {
+        Optional<User> user = this.userRepository.findById(id);
+        if (user.isEmpty()) {
+            return new BaseResponse<>(BaseResponseStatus.NO_SUCH_ITEM);
         }
+        return new BaseResponse<>(user.get().getChats());
     }
 
 }

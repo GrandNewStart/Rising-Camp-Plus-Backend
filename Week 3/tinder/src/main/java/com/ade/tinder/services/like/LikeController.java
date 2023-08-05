@@ -1,53 +1,50 @@
 package com.ade.tinder.services.like;
 
 import com.ade.tinder.config.BaseResponse;
+import com.ade.tinder.config.BaseResponseStatus;
 import com.ade.tinder.services.user.UserRepository;
-import com.ade.tinder.services.like.models.Like;
-import com.ade.tinder.services.like.models.Match;
-import com.ade.tinder.services.user.models.User;
+import com.ade.tinder.services.user.User;
 import org.springframework.web.bind.annotation.*;
-
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
-@RestController
-public class LikeController implements LikeService {
+@RestController("/likes")
+public class LikeController {
 
-    @Override
-    public BaseResponse<Object> getAllLikes() {
-        return BaseResponse.builder()
-            .status(200)
-            .message("SUCCESS")
-            .info("all likes")
-            .data(LikeRepository.shared.getLikes())
-            .build();
+    private final LikeRepository likeRepository;
+    private final UserRepository userRepository;
+
+    public LikeController(LikeRepository likeRepository, UserRepository userRepository) {
+        this.likeRepository = likeRepository;
+        this.userRepository = userRepository;
     }
 
-    @Override
-    public BaseResponse<Object> getLikesBetweenUsers(int userAId, int userBId) {
-        List<Like> data =  LikeRepository.shared.getLikes().stream()
+    @GetMapping("")
+    public BaseResponse<List<Like>> getAllLikes() {
+        return new BaseResponse<>(this.likeRepository.findAll());
+    }
+
+    @GetMapping("")
+    public BaseResponse<List<Like>> getLikesBetweenUsers(@RequestParam int userA, @RequestParam int userB) {
+        List<Like> data =  this.likeRepository.findAll().stream()
             .filter(e->
-                (e.getFromUserId() == userAId && e.getToUserId() == userBId) ||
-                (e.getFromUserId() == userBId && e.getToUserId() == userAId)
+                (e.getSendingUser().getId() == userA && e.getReceivingUser().getId() == userB) ||
+                (e.getSendingUser().getId() == userB && e.getReceivingUser().getId() == userA)
             )
             .toList();
-        return BaseResponse.builder()
-            .status(200)
-            .message("SUCCESS")
-            .info("all likes between users " + userAId + ", " + userBId)
-            .data(data)
-            .build();
+        return new BaseResponse<>(data);
     }
 
-    @Override
+    @GetMapping("/matches")
     public BaseResponse<Object> getAllMatches() {
-        List<Like> likes = LikeRepository.shared.getLikes();
+        List<Like> likes = this.likeRepository.findAll();
         List<Match> matches = new ArrayList<>();
         for (Like likeA : likes) {
             for (Like likeB : likes) {
                 if (!likeA.isMatch(likeB)) continue;
-                Match newMatch = new Match(likeA.getFromUserId(), likeB.getFromUserId());
+                Match newMatch = new Match(likeA.getSendingUser().getId(), likeB.getReceivingUser().getId());
                 boolean matchFound = false;
                 for (Match match : matches) {
                     if (match.equals(newMatch)) {
@@ -60,102 +57,37 @@ public class LikeController implements LikeService {
                 }
             }
         }
-        return BaseResponse.builder()
-            .status(200)
-            .message("SUCCESS")
-            .info("get all matches")
-            .data(matches)
-            .build();
+        return new BaseResponse<>(matches);
     }
 
-    @Override
-    public BaseResponse<Object> addLike(Map<String, Object> requestData) {
-        int fromUserId;
-        int toUserId;
-        try {
-            fromUserId = (int) requestData.get("from");
-            toUserId = (int) requestData.get("to");
-        } catch (Exception exception) {
-            return BaseResponse.builder()
-                .status(500)
-                .message("FAILURE")
-                .info("invalid parameters")
-                .data(null)
-                .build();
-        }
-        List<User> allUsers = UserRepository.shared.getUsers();
+    @PostMapping("")
+    public BaseResponse<Object> addLike(@RequestBody Like like) {
+        List<User> allUsers = this.userRepository.findAll();
         boolean fromUserFound = false;
         boolean toUserFound = false;
         for (User user : allUsers) {
-            if (user.getId() == fromUserId) fromUserFound = true;
-            if (user.getId() == toUserId) toUserFound = true;
+            if (user.getId() == like.getSendingUser().getId()) fromUserFound = true;
+            if (user.getId() == like.getReceivingUser().getId()) toUserFound = true;
             if (fromUserFound && toUserFound) break;
         }
-        if (!fromUserFound) {
-            return BaseResponse.builder()
-                .status(500)
-                .message("FAILURE")
-                .info("user " + fromUserId + " not found")
-                .data(null)
-                .build();
+        if (!fromUserFound || !toUserFound) {
+            return new BaseResponse<>(BaseResponseStatus.NO_SUCH_ITEM);
         }
-        if (!toUserFound) {
-            return BaseResponse.builder()
-                    .status(500)
-                    .message("FAILURE")
-                    .info("user " + toUserId + " not found")
-                    .data(null)
-                    .build();
-        }
-        LikeRepository.shared.addLike(fromUserId, toUserId);
-        return BaseResponse.builder()
-                .status(200)
-                .message("SUCCESS")
-                .info("add new like")
-                .data(null)
-                .build();
+        like.setReverted(false);
+        like.setCreatedAt(LocalDateTime.now());
+        this.likeRepository.save(like);
+        return new BaseResponse<>("like success");
     }
 
-    @Override
-    public BaseResponse<Object> revertLike(Map<String, Object> requestData) {
-        List<Like> allLikes = LikeRepository.shared.getLikes();
-        int likeId;
-        try {
-            likeId = (int) requestData.get("likeId");
-        } catch (Exception e) {
-            return BaseResponse.builder()
-                .status(500)
-                .message("FAILURE")
-                .info("invalid parameter")
-                .data(null)
-                .build();
+    @DeleteMapping("/{id}")
+    public BaseResponse<Object> revertLike(@PathVariable int id) {
+        Optional<Like> like = this.likeRepository.findById(id);
+        if (like.isEmpty()) {
+            return new BaseResponse<>(BaseResponseStatus.NO_SUCH_ITEM);
         }
-        for (Like like : allLikes) {
-            if (like.getId() == likeId) {
-                if (like.isReverted()) {
-                    return BaseResponse.builder()
-                        .status(500)
-                        .message("FAILURE")
-                        .info("already reverted")
-                        .data(null)
-                        .build();
-                }
-                like.setReverted(true);
-                LikeRepository.shared.updateLike(like);
-                return BaseResponse.builder()
-                    .status(200)
-                    .message("SUCCESS")
-                    .info("like reverted")
-                    .data(null)
-                    .build();
-            }
-        }
-        return BaseResponse.builder()
-            .status(500)
-            .message("FAILURE")
-            .info("like not found")
-            .data(null)
-            .build();
+        like.get().setReverted(true);
+        this.likeRepository.save(like.get());
+        return new BaseResponse<>("revert like success");
     }
 
 }

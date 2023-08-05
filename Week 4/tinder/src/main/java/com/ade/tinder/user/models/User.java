@@ -12,6 +12,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -49,7 +50,7 @@ public class User {
 
     @OneToMany(mappedBy = "sendingUser")
     @JsonIgnore
-    private List<Like> likesSent;
+    private List<Like> likesSent = new ArrayList<>();
 
     @OneToMany(mappedBy = "receivingUser")
     @JsonIgnore

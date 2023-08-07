@@ -7,7 +7,7 @@
 
 ## 핵심 개념 정리
 
-[01. JPA N+1 문제](./resources/markdown-1.md)
+[01. JPA 심화](./resources/markdown-1.md)
 
 ## 진행 상황
 

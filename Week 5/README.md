@@ -9,6 +9,8 @@
 
 [01. JPA 심화](./resources/markdown-1.md)
 
+[02. 인증 & 인가](./resources/markdown-2.md)
+
 ## 진행 상황
 
 ## 피드백

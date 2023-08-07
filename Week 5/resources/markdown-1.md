@@ -169,22 +169,31 @@ entityManager.createQuery("{JPQL Query}", {ClassName}.class)
         TypedQuery<Member> query = entityManager.createQuery("...", Member.class);
         ```
     - Query: 반환 타입이 명확하지 않을 때
-        - Query query = entityManager.createQuery("...");
+        ```java
+        Query query = entityManager.createQuery("...");
+        ```
 - 결과 조회 메서드
     - getResultList: 리스트 반환
-        - List<Member> query = entityManager.createQuery("...", Member.class).getResultList();
+        ```
+        List<Member> query = entityManager.createQuery("...", Member.class).getResultList();
+        ```
     - getSingleResult: 단일 객체 반환
-        - Member query = entityManager.createQuery("...", Member.class).getSingleResult();
+        ```
+        Member query = entityManager.createQuery("...", Member.class).getSingleResult();
+        ```
 - 파라미터 바인딩
     - 이름 기준
-        - Member query = entityManager.createQuery("select m from Member m where m.username=username", Member.class)
+        ```
+        Member query = entityManager.createQuery("select m from Member m where m.username=username", Member.class)
             .setParameter(**"username"**, usernameParam)
             .getSingleResult();
+        ```
     - 위치 기준 (수정 도중에 값이 변동될 수 있다)
-        - Member query = entityManager.createQuery("select m from Member m where m.username=username", Member.class)
+        ```
+        Member query = entityManager.createQuery("select m from Member m where m.username=username", Member.class)
             .setParameter(**1**, usernameParam)
             .getSingleResult();
-    
+        ```
 
 ## QueryDSL
 

@@ -174,26 +174,48 @@ entityManager.createQuery("{JPQL Query}", {ClassName}.class)
         ```
 - 결과 조회 메서드
     - getResultList: 리스트 반환
-        ```
+        ```java
         List<Member> query = entityManager.createQuery("...", Member.class).getResultList();
         ```
     - getSingleResult: 단일 객체 반환
-        ```
+        ```java
         Member query = entityManager.createQuery("...", Member.class).getSingleResult();
         ```
 - 파라미터 바인딩
     - 이름 기준
-        ```
-        Member query = entityManager.createQuery("select m from Member m where m.username=username", Member.class)
-            .setParameter(**"username"**, usernameParam)
+        ```java
+        Member query = entityManager.createQuery("select m from Member m where m.username=:username", Member.class)
+            .setParameter("username", "Adam")
             .getSingleResult();
         ```
     - 위치 기준 (수정 도중에 값이 변동될 수 있다)
-        ```
-        Member query = entityManager.createQuery("select m from Member m where m.username=username", Member.class)
-            .setParameter(**1**, usernameParam)
+        ```java
+        Member query = entityManager.createQuery("select m from Member m where m.username=?1", Member.class)
+            .setParameter(1, "Adam")
             .getSingleResult();
         ```
+- JOIN
+    - INNER JOIN
+        ```java
+        select m from Member m [inner] join m.team t
+        ```
+    - OUTER JOIN
+        ```java
+        select m from Member m left [outer] join m.team t
+        ```
+    - THETA JOIN
+        ```java
+        select m from Member m, Team t where m.username = t.name
+        ```
+- FETCH JOIN
+    ```java
+    select m from Member m join fetch m.team
+    ```
+- SUB QUERY
+    ```java
+    select m from Member m where m.age > (select avg(m2.age) from Member m2)
+    select m from Member m where (select count(o) from Order o where m = o.member) > 0
+    ```
 
 ## QueryDSL
 

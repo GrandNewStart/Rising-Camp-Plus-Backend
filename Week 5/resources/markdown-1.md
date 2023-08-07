@@ -146,4 +146,50 @@ Page<MemberDto> dtoPage = page.map(m -> new MemberDto(...));
 
 # 객체지향쿼리
 
-JPA는 관계형 데이터를 객체형 데이터로 변환하여 반환하는 API다. 하지만 관계형 데이터의 모든 기능을 객체로 옮겨오는 것은 불가능하다. 따라서 부분적으로 SQL과 비슷한 쿼리 언어를 도입하여 이를 보완할 필요가 있다. JPA는 이를 위해 SQL을 추상화한 JPQL이라는 객체 지향 쿼리 언어를 제공하고 있다. 
+JPA는 관계형 데이터를 객체형 데이터로 변환하여 반환하는 API다. 하지만 관계형 데이터의 모든 기능을 객체로 옮겨오는 것은 불가능하다. 따라서 부분적으로 SQL과 비슷한 쿼리 언어를 도입하여 이를 보완할 필요가 있다. JPA는 이를 위해 SQL을 추상화한 JPQL이라는 객체 지향 쿼리 언어를 제공하고 있다. JPQL은 엔티티 객체를 대상으로 하는 쿼리언어라고 할 수 있다.
+
+```java
+Stfing jpql = "select m from Member m where m.name like '%hello%'"
+List<Member> result = entityManager.createeQuery(jpql, Member.class).getResultList();
+```
+
+## JPQL 기본 문법
+
+```java
+entityManager.createQuery("{JPQL Query}", {ClassName}.class)
+```
+
+- 엔티티, 속성은 대소문자를 구분 / 그 외 키워드들은 구분하지 않음
+- 객체는 엔티티 이름을 사용(테이블 이름이 아님)
+- 별칭은 필수(*를 못쓴다는 얘기. as는 생략 가능하다.)
+- 집합, 정렬 함수 모두 사용 가능
+- 반환 타입
+    - TypedQuery: 반환 타입이 명확할 때: 
+        - TypedQuery<Member> query = entityManager.createQuery("...", Member.class);
+    - Query: 반환 타입이 명확하지 않을 때
+        - Query query = entityManager.createQuery("...");
+- 결과 조회 메서드
+    - getResultList: 리스트 반환
+        - List<Member> query = entityManager.createQuery("...", Member.class).getResultList();
+    - getSingleResult: 단일 객체 반환
+        - Member query = entityManager.createQuery("...", Member.class).getSingleResult();
+- 파라미터 바인딩
+    - 이름 기준
+        - Member query = entityManager.createQuery("select m from Member m where m.username=username", Member.class)
+            .setParameter(**"username"**, usernameParam)
+            .getSingleResult();
+    - 위치 기준 (수정 도중에 값이 변동될 수 있다)
+        - Member query = entityManager.createQuery("select m from Member m where m.username=username", Member.class)
+            .setParameter(**1**, usernameParam)
+            .getSingleResult();
+    
+
+## QueryDSL
+
+QueryDSL은 위와 같이 JPQL을 스트링으로 직접 쓰지 않고 자바 코드로 작성할 수 있게해주는 라이브러리이다. 코드로 작성하기 때문에 컴파일 시점에 오류를 찾을 수 있어 좋다. 주로 **동적 쿼리**를 작성할 때 사용된다.
+
+- 동적쿼리: 특정 상황이나 조건에 따라 변경되는 쿼리. 예를 들어 숙박앱의 겁색 필터에서 여행지, 체크인&아웃, 인원 수 등은 입력 할 수도 있고 안할 수도 있다. 입력 여부에 따라 쿼리가 동적으로 변해야 한다.
+
+## JDBC
+
+별도의 라이브러리를 사용하지 않고 JDBC를 직접 사용할 수도 있다. 다만 이 경우, 적절한 시점에 플러시하는 것이 중요.

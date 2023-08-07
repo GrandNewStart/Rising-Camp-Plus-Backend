@@ -165,7 +165,9 @@ entityManager.createQuery("{JPQL Query}", {ClassName}.class)
 - 집합, 정렬 함수 모두 사용 가능
 - 반환 타입
     - TypedQuery: 반환 타입이 명확할 때: 
-        - TypedQuery<Member> query = entityManager.createQuery("...", Member.class);
+        ```java
+        TypedQuery<Member> query = entityManager.createQuery("...", Member.class);
+        ```
     - Query: 반환 타입이 명확하지 않을 때
         - Query query = entityManager.createQuery("...");
 - 결과 조회 메서드

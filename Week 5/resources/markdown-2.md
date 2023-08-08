@@ -65,5 +65,77 @@
 
 인가 과정
 
-1. 
+1. 로그인 요청
 
+2. 로그인 성공, 인증 정보를 Payload에 담고 비밀키를 통해 JWT 발급
+
+3. 서버는 클라이언트에게 JWT를 전달
+
+4. 클라이언트는 JWT를 어떤 형태로든 저장, 요청을 보낼 때 마다 헤더(Authorization)에 담아 보낸다
+
+5. 서버는 전달받은 JWT의 헤더, 페이로드에 비밀키를 더해 암호화
+
+6. 서버는 암호화된 값이 JWT의 서명 부분과 일치하는지 판단, 유호기간도 판단
+
+7. 유효한 토큰이면 요청에 응답
+
+---
+
+## OAuth
+
+인터넷 사용자들이 비밀번호를 제공하지 않고 다른 웹사이트 상의 자신들의 정보에 대해 웹사이트나 애플리케이션의 접근 권한을 부여할 수 있는 공통적인 수단으로서 사용되는, 접근 위임을 위한 개방형 표준. 즉, 페북/구글/카카오 로그인 등의 외부 서비스의 로그인 방식으로 인증하는 방법
+
+### 참여자
+- Resource Server: Client가 사용하고자 하는 정보를 보유하고 있는 서버 (Facebook, Google, Twitter)
+- Resource Owner: 정보의 소유자, 유저.
+- Client: Resource Server에 접속해서 정보를 가져오고자 하는 클라이언트(웹/앱 어플리케이션)
+
+### 과정
+
+- 등록
+
+    1. Client -(등록)-> Resource Server
+
+    2. Resource Server -(Client ID, Client Secret)-> Client
+
+- 인증코드 발급
+
+    1. Resource Owner가 Client의 소셜 로그인 버튼을 클릭
+
+    2. Resource Owner는 Resource Server로 리다이렉트
+
+    3. Resource Server는 Client의 ID, Secret을 확인. 인증되면 로그인을 승인
+
+    4. Resource Owner에게 Client로 정보 위임 권한을 줄 것읜지 확인
+
+    5. Resource Owner가 동의를 마치면 Resource Server는 Client가 등록한 리다이렉션 URL로 인증코드를 담아 요청
+
+- Access Token 인증
+
+    1. Client는 ID, 패스워드, 발급받은 인증코드를 Resource Server에 전달
+    
+    2. Resource Server는 전달받은 정보를 검사하고 유효한 요청이면 Access Token 발급
+
+- 유저 정보 조회
+
+    1. Client는 Access Token을 헤더에 담아 Resource Server로 전송
+    
+    2. Resource Server는 Access Token을 검증하고 Client에게 유저 정보를 반환
+    
+    3. Client는 유저 정보로 회원가입 혹은 로그인 기능 수행
+    
+    4. Client는 JWT 토큰을 발급하여 인가 처리 수행
+
+### 구현 방법
+
+    1. Resource Server에 내 서비스를 Client로 등록
+    
+    2. Resource Server 로그인 페이지로 리다이렉션하는 API 제작(인증코드 발급)
+    
+    3. Resource Server 로그인 인증 후, 인증코드를 담은 리다이렉션 요청을 받는 API 제작
+    
+    4. 인증코드를 헤더에 담아 Access Token을 받아오고 이를 다시 담아 유저 정보를 받아오는 로직 구현
+    
+    5. 받아온 정보를 활용해 회원가입/로그인 기능 구현
+    
+    6. 받아온 정보로 JWT 토큰을 만들어 Client에 응답 

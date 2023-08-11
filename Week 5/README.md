@@ -11,6 +11,8 @@
 
 [02. 인증 & 인가](./resources/markdown-2.md)
 
+[03. 구글 로그인 구현](./resources/markdown-3.md)
+
 ## 진행 상황
 
 ## 피드백

@@ -9,7 +9,7 @@ import com.ade.tinder.user.models.User;
 import lombok.AllArgsConstructor;
 import org.apache.el.stream.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+// import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
@@ -23,10 +23,10 @@ public class UserController {
     @Autowired
     private final InterestRepository interestRepository;
 
-    @GetMapping
-    public Object getCurrentUser(OAuth2AuthenticationToken oAuth2AuthenticationToken) {
-        return oAuth2AuthenticationToken.getPrincipal().getAttributes();
-    }
+    // @GetMapping
+    // public Object getCurrentUser(OAuth2AuthenticationToken oAuth2AuthenticationToken) {
+    //     return oAuth2AuthenticationToken.getPrincipal().getAttributes();
+    // }
 
     @ResponseBody
     @GetMapping("/users")
@@ -36,35 +36,35 @@ public class UserController {
         return new BaseResponse<>(users);
     }
 
-    @ResponseBody
-    @PostMapping("/users")
-    public BaseResponse<Object> createUser(OAuth2AuthenticationToken oAuth2AuthenticationToken) {
-        String id = oAuth2AuthenticationToken
-            .getPrincipal()
-            .getAttribute("sub");
-        Optional<User> user = this.userRepository.findById(id);
-        if (user.isEmpty()) {
-            User newUser = this.userRepository.save(new User(
-                id, 
-                "new user", 
-                "X", 
-                null,
-                "", 
-                "X", 
-                -1, 
-                -1, 
-                null,
-                null, 
-                null
-            ));
-            if (newUser == null) {
-                return new BaseResponse<>(BaseResponseStatus.UNKNOWN_ERROR);
-            }
-            return new BaseResponse<>(BaseResponseStatus.SUCCESS);
-        } else {
-            return new BaseResponse<>(BaseResponseStatus.DUPLICATE_ITEM);
-        }
-    }
+    // @ResponseBody
+    // @PostMapping("/users")
+    // public BaseResponse<Object> createUser(OAuth2AuthenticationToken oAuth2AuthenticationToken) {
+    //     String id = oAuth2AuthenticationToken
+    //         .getPrincipal()
+    //         .getAttribute("sub");
+    //     Optional<User> user = this.userRepository.findById(id);
+    //     if (user.isEmpty()) {
+    //         User newUser = this.userRepository.save(new User(
+    //             id, 
+    //             "new user", 
+    //             "X", 
+    //             null,
+    //             "", 
+    //             "X", 
+    //             -1, 
+    //             -1, 
+    //             null,
+    //             null, 
+    //             null
+    //         ));
+    //         if (newUser == null) {
+    //             return new BaseResponse<>(BaseResponseStatus.UNKNOWN_ERROR);
+    //         }
+    //         return new BaseResponse<>(BaseResponseStatus.SUCCESS);
+    //     } else {
+    //         return new BaseResponse<>(BaseResponseStatus.DUPLICATE_ITEM);
+    //     }
+    // }
 
     @ResponseBody
     @GetMapping("/users/{id}")

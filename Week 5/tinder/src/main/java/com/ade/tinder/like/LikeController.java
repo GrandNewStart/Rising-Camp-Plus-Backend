@@ -33,8 +33,8 @@ public class LikeController {
     }
 
     @PostMapping("/likes")
-    public BaseResponse<Object> addLike(@RequestBody Map<String, Integer> map) {
-        int sendingUserId, receivingUserId;
+    public BaseResponse<Object> addLike(@RequestBody Map<String, String> map) {
+        String sendingUserId, receivingUserId;
         try {
             sendingUserId = map.get("from");
             receivingUserId = map.get("to");

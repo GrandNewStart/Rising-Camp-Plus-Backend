@@ -13,6 +13,8 @@
 
 [03. 구글 로그인 구현](./resources/markdown-3.md)
 
+[04. Spring Security](./resources/markdown-4.md)
+
 ## 진행 상황
 
 ## 피드백

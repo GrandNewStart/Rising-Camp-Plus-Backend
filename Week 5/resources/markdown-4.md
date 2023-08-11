@@ -84,11 +84,164 @@ spring.security.user.password=haha
 
 ---
 
-## CSRF Filer
+## CSRF Filter - CSRF 공격을 막기 위해
 
 은행 웹사이트에 접속하여 세션 쿠키가 브라우저에 저장되었다. 그리고 로그아웃을 하지 않은채로 어떤 악의적인 웹사이트에 접속했다. 그러면 그 웹사이트는 세션 쿠키를 이용해 내 계좌에서 이체를 수행할 수 있다. 이러한 행위를 CSRF, Cross-Site Request Forgery라고 한다.
 
-CSRF를 예방하는 방법은 여러가지가 있는데 Spring Security에 기본 적용된 것은 '토큰 동기화'이다. API 요청이 이뤄질 때 마다 각각 다른 토큰을 생성한다. 그리고 새로운 API 동작을 수행할 때 마다 이전 동작에서 발생한 토큰을 요구하도록 한다. 만약 이 토큰이 이미 사용된 것이거나 전혀 다른 값이면 CSRF로 간주하여 에러를 반환한다. 예를들어 '/logout' 페이지의 소스를 살펴보자.
+CSRF를 예방하는 방법은 여러가지가 있는데 Spring Security에 기본 적용된 것은 'CSRF 토큰'이다. API 요청이 이뤄질 때 마다 각각 다른 토큰을 생성한다. 그리고 새로운 API 동작을 수행할 때 마다 이전 동작에서 발생한 토큰을 요구하도록 한다. 만약 이 토큰이 이미 사용된 것이거나 전혀 다른 값이면 CSRF로 간주하여 에러를 반환한다. 예를들어 '/logout' 페이지의 소스를 살펴보자.
 ![browser](./browser-5.png)
 
-"name"이 "_csrf"라고 되어있는 태그에 "value"로 임의의 긴 문자열이 들어가있다. 이것이 이전 API 요청에서 발생한 토큰이다. 만약 이 값이 없거나 적절하지 않은 값으로 바뀌면 로그아웃 버튼을 눌러도 에러만 반환될 것이다.  
+"name"이 "_csrf"라고 되어있는 태그에 "value"로 임의의 긴 문자열이 들어가있다. 이것이 이전 API 요청에서 발생한 CSRF 토큰이다. 만약 이 값이 없거나 적절하지 않은 값으로 바뀌면 로그아웃 버튼을 눌러도 에러만 반환될 것이다.  
+
+CSRF 토큰은 다음과 같이 확인할 수 있다.
+```java
+...
+@GetMapping("csrf-token")
+public CsrfToken getCSRFToken(HttpServletRequest request) {
+    return (CsrfToken) request.getAttribute("_csrf");
+}
+...
+``` 
+위와 같은 API를 만들고 '/csrf-token'에 접속하면 다음과 같은 화면을 볼 수 있다.
+![browser](./browser-6.png)
+
+"token"에 해당하는 값은 당연히 새로고침 할 때 마다 바뀌게된다. 이 값을 HTTP 요청 헤더에 "X-CSRF-TOKEN" 필드에 대한 값으로 넣고 어떤 API를 호출하면 정상적으로 동작하는 것을 확인할 수 있다.
+
+또 CSRF를 방지하는 데는 'SameSite cookie'라는 방법도 있다. 이는 크로스 사이트로 전송하는 요청에 대해 쿠키의 전송을 허용하지 않도록 하는 설정이다. application.properties에 다음 한줄을 추가하자.
+```
+server.servlet.session.cookie.same-site=strict
+```
+
+그리고 이 설정을 활성화 하기 위해 CSRF 토큰을 사용하는 기본 세팅을 오버라이드 해야 할 필요가 있다. 다음과 같은 커스텀 SecurityConfiguration 클래스를 만들어주자.
+```java
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(auth->{
+            auth.anyRequest().authenticated();
+        });
+        http.sessionManagement(session -> {
+            // 모든 세션을 무상태로 만든다. 이전 호출과 이번 호출이 아무 관계가 없다는 의미.
+            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        });
+        http.httpBasic(basic -> {});
+        http.csrf(csrf->{
+            // 기본 CSRF 설정을 꺼준다. 
+            csrf.disable();
+        });
+        return http.build();
+    }
+    
+}
+```
+
+이제 다시 앱을 실행시키고 아무 경로나 접속해보면 기존에 뜨던 로그인 화면이 나오지 않고 브라우저 팝업을 통해 로그인을 요구하는 것을 볼 수 있다. '/login'이나 '/logout' 경로에 접속해도 아무것도 뜨지 않을 것이다. 기본 설정에는 존재하던 formLogin 설정을 선언하지 않았기 때문이다. 또 아까 만든 '/csrf-token'에 접속해도 빈 화면만이 뜨게될 것이다. csrf 설정을 disable() 했기 때문이다.
+![browser](./browser-7.png)
+
+---
+
+## CORS Filter - 손님 가려 받아라
+
+CORS, Cross-Origin Resource Sharing란 서버가 다른 출처로부터의 접근을 허용하거나 제한할 수 있게 하는 HTTP 헤더 기반의 메커니즘이다. 기본적으로 브라우저는 현재 서비스 외의 출처로부터 AJAX 호출을 허용하지 않도록 되어있는데, CORS 설정을 통해 어떤 도메인을 허용할지 혹은 제한할지를 선택할 수 있다. 이는 Spring Boot의 글로벌 설정 혹은 로컬 설정을 통해 구현 가능하다. 
+
+    - 글로벌 설정
+    ```java
+    (SecurityConfig.java)
+    ...
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                .allowedMethods("*")
+                .allowedOrigins("http://localhost:3000");
+            }
+        };
+    }
+    ...
+    ```
+    - 로컬 설정
+        - @CrossOrigin: 모든 출처 허용
+        - @CrossOrigin(origins = "https://www.google.com): 특정 출처만 허용
+
+---
+        
+## 메모리에 사용자 자격증명 저장하기
+
+사용자의 인증 정보는 다음과 같은 저장소에 저장될 수 있다.
+- 메모리: 테스트 목적으로만 사용하며 실제 상황에선 사용하지 않는다. 다음과 같이 유저 정보를 정의하여 메모리에 저장할 수 있다. 이대로 앱을 실행하면 로그인 창이 뜨는데 이때 ade/haha 혹은 admin/haha로 접속하면 된다.
+    ```java
+    (SecurityConfig.java)
+    ...
+    @Bean
+    public UserDetailsService userDetailsService(DataSource source) {
+        var user = User.withUsername("ade")
+            .password("{noop}haha") // {noop}은 별도의 인코딩을 하지 않겠다는 의미이다.
+            .roles("USER")
+            .build();
+        var admin = User.withUsername("admin")
+            .password("{noop}haha")
+            .roles("ADMIN")
+            .build();
+        return new InMemoryUserDetailsManager(user, admin);
+    }
+    ...
+    ```
+
+- 데이터베이스: JDBC/JPA를 이용해 인증 정보에 접근한다.
+    우선 여러가지 의존성이 필요하다. build.gradle에 다음을 추가해주자.
+    ```groovy
+    dependencies {
+        ...
+        implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+        implementation 'com.h2database:h2'
+        implementation 'org.springframework.boot:spring-boot-devtools'
+        ...
+    }
+    ```
+    
+    그리고 SecurityConfig 클래스에 다음 Bean들을 추가해주자.
+    ```java
+    (SecurityConfig.java)
+    ...
+    @Bean
+    public DataSource dataSource() {
+        return new EmbeddedDatabaseBuilder()
+            .setType(EmbeddedDatabaseType.H2)
+            .addScript(JdbcDaoImpl.DEFAULT_USER_SCHEMA_DDL_LOCATION)
+            .build();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService(DataSource dataSource) {
+        var user = User.withUsername("ade")
+            .password("{noop}haha")
+            .roles("USER")
+            .build();
+        var admin = User.withUsername("admin")
+            .password("{noop}haha")
+            .roles("ADMIN")
+            .build();
+
+         var jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
+         jdbcUserDetailsManager.createUser(user);
+         jdbcUserDetailsManager.createUser(admin);
+
+         return jdbcUserDetailsManager;
+    }
+    ...
+    ```
+    
+    이제 앱을 실행시키고 h2-console에 접속해보면 다음과 같이 AUTHORITIES 테이블이 만들어져 있고 이 테이블의 모든 아이템을 조회해보면 미리 정의한 두개의 이용자 정보가 조회될 것이다.
+    ![browser](./browser-8.png)
+    
+- LDAP: Lightweight Directory Access Protocol. 디렉토리 서비스, 인증을 위한 개방형 프로토콜이다.
+

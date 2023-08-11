@@ -136,6 +136,8 @@
 
 6. **사용자를 인증한다.**
 
+ID 토큰에서 받은 정보를 바탕으로 이용자를 식별하고 로그인 혹은 회원가입 처리를 한다.
+
 ---
 
 ## 스프링 부트 프로젝트 설정
@@ -151,4 +153,26 @@ dependencies {
 }
 ``` 
 
+application.properties에 다음과 같은 설정을 추가한다.
+```
+spring.security.oauth2.client.registration.google.client-id={클라이언트 ID}
+spring.security.oauth2.client.registration.google.client-secret={클라이언트 보안 비밀번호}
+```
 
+컨트롤러 클래스를 하나 만들고 다음과 같은 REST API 하나를 생성한다.
+```java
+@RestController
+public class GoogleController {
+
+    @GetMapping
+    public Object getCurrentUser(OAuth2AuthenticationToken oAuth2AuthenticationToken) {
+        return oAuth2AuthenticationToken
+            .getPrincipal()
+            .getAttributes();
+    }
+
+}
+```
+
+앱을 실행시키고 localhost:8080에 접속하면 구글 로그인 화면이 뜰 것이다. 구글 로그인읋 해주고나면 다음과 같은 결과를 확인할 수 있을 것이다.
+![browser](./browser-1.png)

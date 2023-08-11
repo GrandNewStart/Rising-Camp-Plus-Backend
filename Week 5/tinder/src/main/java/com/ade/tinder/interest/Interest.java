@@ -8,8 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -27,9 +25,9 @@ public class Interest {
     @JsonIgnore
     private InterestCategory category;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JsonIgnore
-    private Set<User> users;
+    // @ManyToMany(fetch = FetchType.LAZY)
+    // @JsonIgnore
+    // private Set<User> users;
 
     @JsonProperty("name")
     private String name;

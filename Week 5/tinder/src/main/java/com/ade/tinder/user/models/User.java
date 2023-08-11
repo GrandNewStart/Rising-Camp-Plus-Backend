@@ -24,8 +24,7 @@ import java.util.Set;
 public class User {
 
     @Id
-    @GeneratedValue
-    private int id;
+    private String id;
 
     private String name;
 
@@ -54,11 +53,11 @@ public class User {
 
     @OneToMany(mappedBy = "receivingUser")
     @JsonIgnore
-    private List<Like> likesReceived;
+    private List<Like> likesReceived = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "user")
-    @JsonIgnore
-    private Set<Interest> interests;
+    // @ManyToMany(mappedBy = "user")
+    // @JsonIgnore
+    // private Set<Interest> interests;
 
 //
 //    @OneToMany(mappedBy = "user")

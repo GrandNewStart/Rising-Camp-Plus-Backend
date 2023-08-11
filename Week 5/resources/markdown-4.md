@@ -240,8 +240,139 @@ CORS, Cross-Origin Resource Sharing란 서버가 다른 출처로부터의 접�
     ...
     ```
     
-    이제 앱을 실행시키고 h2-console에 접속해보면 다음과 같이 AUTHORITIES 테이블이 만들어져 있고 이 테이블의 모든 아이템을 조회해보면 미리 정의한 두개의 이용자 정보가 조회될 것이다.
+    이제 앱을 실행시키고 h2-console에 접속해보면 다음과 같이 AUTHORITIES 및 USERS 테이블이 만들어져 있고 이 테이블의 모든 아이템을 조회해보면 미리 정의한 두개의 이용자 정보가 조회될 것이다.
     ![browser](./browser-8.png)
+    ![browser](./browser-9.png)
+    
+    다만 여기서 USERS 테이블에 패스워드의 원문이 그대로 노출되는 것이 좀 그렇다. 다음 장에서 이를 해시하여 저장할 수 있도록 설정을 바꿔보자.
     
 - LDAP: Lightweight Directory Access Protocol. 디렉토리 서비스, 인증을 위한 개방형 프로토콜이다.
+
+---
+
+## Bcrypt 인코딩
+
+PasswordEncoder: 패스워드의 단방향 변형(해싱)을 제공하는 인터페이스. Spring Security는 이 인터페이스를 구현한 다양한 클래스들을 가지고 있다. 그 중 하나가 BCryptPasswordEncoder이다. 다음과 같이 BCryptPasswordEncoder를 Bean으로 만들자.
+```java
+(SecurityConfig.java)
+...
+@Bean
+public BCryptPasswordEncoder bCryptPasswordEncoder() {
+    return new BCryptPasswordEncoder();
+}
+...
+```
+
+이제 이 인코더를 이용해 패스워드를 해시하여 저장하도록 하자. 아까 만들었던 userDetailsService Bean을 다음과 같이 수정하자.
+```java
+(SecurityConfig.java)
+...
+@Bean
+public UserDetailsService userDetailsService(DataSource dataSource) {
+    var user = User.withUsername("ade")
+            .password("haha") // 인코딩 처리하므로 {noop}을 뺐다.
+            .passwordEncoder(str-> bCryptPasswordEncoder().encode(str))
+            .roles("USER")
+            .build();
+    var admin = User.withUsername("admin")
+        .password("hoho")
+        .passwordEncoder(str-> bCryptPasswordEncoder().encode(str))
+        .roles("ADMIN")
+        .build();
+
+     var jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
+     jdbcUserDetailsManager.createUser(user);
+     jdbcUserDetailsManager.createUser(admin);
+
+     return jdbcUserDetailsManager;
+}
+...
+```
+
+이렇게 패스워드 인코더를 설정했으니 다시 앱을 실행하고 h2 콘솔에서 결과를 확인해보자.
+
+![browser](./browser-10.png)
+
+---
+
+## JWT(Json Web Token) 인증
+
+Spring Security 기본 설정에서 인증은 유효기간도 없고, 이용자에 대한 세부정보도 없고, 쉽게 디코딩 할 수 있어 이상적이지 못하다. 그래서 JWT를 사용하는 것이 권장된다. JWT는 개방형 프로토콜에 두 주체간의 클레임을 안전하게 표현하는 업계 표준으로 자리잡았다.
+
+JWT의 구조
+- 헤더
+    - "typ": "JWT"
+    - "alg": "HS256"
+- 페이로드
+    - "iss"
+    - "sub"
+    - "aud"
+    - "exp"
+    - "iat"
+    (각 클레임에 대한 세부 내용은 이전 장에서 명시하였다.)
+- 서명
+    - 헤더 + 페이로드를 개인키로 서명
+    - 공개키
+
+Spring Boot의 OAuth2 리소스 서버를 이용한 JWT 검증
+1. 키 페어 생성 (java.security.KeyPairGenerator 혹은 openssl 이용)
+    ```java
+    (SecurityConfig.java)
+    ...
+    @Bean
+    public KeyPair KeyPair() {
+        try {
+        var keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+            keyPairGenerator.initialize(2048);
+            return keyPairGenerator.generateKeyPair();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    ...
+    ```
+
+2. RSA키 생성 (com.nimbusds.jose.j2k.RSAKey)
+    ```java
+    (SecurityConfig.java)
+    ...
+    @Bean
+    public RSAKey rsaKey(KeyPair keyPair) {
+        return new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
+            .privateKey(keyPair.getPrivate())
+            .keyID(UUID.randomUUID().toString())
+            .build();
+    }
+    ...
+    ```
+
+3. JWKSource(JSON Web Key source) 생성
+    - RSA 키로 JWKSet을 만든다.
+    - JSWKSet로 JWKSource를 만든다.
+    ```java
+    (SecurityConfig.java)
+    ...
+    @Bean
+    public JWKSource<SecurityContext> jwkSource(RSAKey rsaKey) {
+        var jwkSet = new JWKSet(rsaKey);
+        return (jwkSelector, context)->jwkSelector.select(jwkSet);
+    }
+    ...
+    ```
+
+4. RSA 공개키로 디코딩 (NimbusJwtDecoder.withPublicKey(rsaKey().toRSAPublicKey()).build())
+    ```java
+    (SecurityConfig.java)
+    ...
+    @Bean
+    public JwtDecoder jwtDecoder(RSAKey rsaKey) throws JOSEException {
+        return NimbusJwtDecoder
+            .withPublicKey(rsaKey.toRSAPublicKey())
+            .build();
+    }
+    ...
+    ```
+
+5. JWKSource로 인코딩 (new NimbusJwtEncoder(jwkSource()))
+
 

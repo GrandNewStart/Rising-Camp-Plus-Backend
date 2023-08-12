@@ -18,9 +18,14 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
@@ -49,18 +54,26 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(auth->
-            auth
-            .anyRequest()
-            .authenticated()
-        );
-        http.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        http.httpBasic(basic->{});
-        http.csrf(csrf->csrf.disable());
-        http.headers(security->security.frameOptions(frame->{ frame.sameOrigin(); }));
-        http.oauth2Client(Customizer.withDefaults());
-        // http.oauth2ResourceServer(oauth->oauth.jwt(jwt->jwt.decoder(null)))
-        return http.build();
+        // http.authorizeHttpRequests(auth->
+        //     auth
+        //     .anyRequest()
+        //     .authenticated()
+        // );
+        // http.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        // http.httpBasic(basic->{});
+        // http.csrf(csrf->csrf.disable());
+        // http.headers(headers->headers.frameOptions(frame->{ frame.sameOrigin(); }));
+        // http.oauth2Client(Customizer.withDefaults());
+        // return http.build();
+        http
+			.authorizeHttpRequests(authorize -> authorize
+				.anyRequest().authenticated()
+			)
+            .oauth2Client(client -> client
+                .clientRegistrationRepository(this.clientRegistrationRepository())
+            )
+			.oauth2Login(Customizer.withDefaults());
+		return http.build();
     }
 
     @Bean
@@ -84,6 +97,26 @@ public class SecurityConfig {
 			.clientName("Google")
 			.build();
 	}
+
+@Bean
+public OAuth2AuthorizedClientManager authorizedClientManager(
+    ClientRegistrationRepository clientRegistrationRepository,
+    OAuth2AuthorizedClientRepository authorizedClientRepository
+) {
+	OAuth2AuthorizedClientProvider authorizedClientProvider =
+        OAuth2AuthorizedClientProviderBuilder.builder()
+            .authorizationCode()
+            .refreshToken()
+            .clientCredentials()
+            .build();
+	DefaultOAuth2AuthorizedClientManager authorizedClientManager =
+        new DefaultOAuth2AuthorizedClientManager(
+            clientRegistrationRepository, 
+            authorizedClientRepository
+        );
+	authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+	return authorizedClientManager;
+}
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {

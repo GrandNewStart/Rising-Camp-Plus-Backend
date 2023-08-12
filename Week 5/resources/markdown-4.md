@@ -299,7 +299,8 @@ public UserDetailsService userDetailsService(DataSource dataSource) {
 
 Spring Security 기본 설정에서 인증은 유효기간도 없고, 이용자에 대한 세부정보도 없고, 쉽게 디코딩 할 수 있어 이상적이지 못하다. 그래서 JWT를 사용하는 것이 권장된다. JWT는 개방형 프로토콜에 두 주체간의 클레임을 안전하게 표현하는 업계 표준으로 자리잡았다.
 
-JWT의 구조
+### JWT의 구조
+
 - 헤더
     - "typ": "JWT"
     - "alg": "HS256"
@@ -314,7 +315,8 @@ JWT의 구조
     - 헤더 + 페이로드를 개인키로 서명
     - 공개키
 
-Spring Boot의 OAuth2 리소스 서버를 이용한 JWT 검증
+### Spring Boot의 OAuth2 리소스 서버를 이용한 JWT 검증
+
 1. 키 페어 생성 (java.security.KeyPairGenerator 혹은 openssl 이용)
     ```java
     (SecurityConfig.java)
@@ -374,5 +376,109 @@ Spring Boot의 OAuth2 리소스 서버를 이용한 JWT 검증
     ```
 
 5. JWKSource로 인코딩 (new NimbusJwtEncoder(jwkSource()))
+    ```java
+    (SecurityConfig.java)
+    ...
+    @Bean
+    public JwtEncoder jwtEncoder(JWKSource<SecurityContext> source) {
+        return new NimbusJwtEncoder(source);
+    }
+    ...
+    ```
 
+### JWT의 생성
 
+다음과 같은 이용자 정보를 JWT로 만든다고 가정하자
+> username: "user", password: "password""
+이 정보를 { "token": "{TOKEN_VALUE}" } 형식의 응답에 담아 JWT를 생성해보도록 하자.
+
+1. Basic 인증을 통해 JWT 획득
+    Controller 클래스에 다음과 같은 메서드를 추가한다.
+    ```java
+    import org.springframework.security.core.Authentication;
+    
+    ...
+    @PostMapping("authenticate")
+    public Authentication authenticate(Authentication authentication) {
+        return authentication;
+    }
+    ...
+    ```
+    그리고 포스트맨을 열어 '/authenticate' 경로로 POST 요청을 날려보자. 물론 사전에 ID/PW가 "user/password"인 유저를 설정에 추가했다는 전제이다. 그러면 Authorization 헤더에는 "Basic dXNlcjpwYXNzd29yZA=="와 같은 값이 들어가게 될 것이다. 다음은 그에 대한 응답이다. 현재 헤더에 담긴 유저에 대한 정보를 반환하고 있다.
+    ```json
+    {
+        "authorities": [
+            {
+                "authority": "ROLE_USER"
+            }
+        ],
+        "details": {
+            "remoteAddress": "0:0:0:0:0:0:0:1",
+            "sessionId": null
+        },
+        "authenticated": true,
+        "principal": {
+            "password": null,
+            "username": "user",
+            "authorities": [
+                {
+                    "authority": "ROLE_USER"
+                }
+            ],
+            "accountNonExpired": true,
+            "accountNonLocked": true,
+            "credentialsNonExpired": true,
+            "enabled": true
+        },
+        "credentials": null,
+        "name": "user"
+    }
+    ```
+    
+    이제 이 정보를 이용해 JWT를 만들 차례다 위에서 만든 authenticate 메서드를 다음과 같이 변경하자.
+    ```java
+    ...
+    @PostMapping("authenticate")
+    public String authenticate(Authentication authentication) {
+        return createToken(authentication);
+    }
+
+    private String createToken(Authentication authentication) {
+        var claims = JwtClaimsSet.builder()
+            .issuer("self")
+            .issuedAt(Instant.now())
+            .expiresAt(Instant.now().plusSeconds(60*30))
+            .subject(authentication.getName())
+            .claim("scope", createScope(authentication))
+            .build();
+        JwtEncoderParameters parameters = JwtEncoderParameters.from(claims);
+        return jwtEncoder.encode(parameters).getTokenValue();
+    }
+
+    private Object createScope(Authentication authentication) {
+        return authentication.getAuthorities()
+            .stream()
+            .map(a->a.getAuthority())
+            .collect(Collectors.joining(" "));
+    }
+    ...
+    ```
+    
+    앱을 실행하고 Basic Auth를 적용한 상태에서 '/authenticate'로 POST 요청을 날리면 다음과 같은 값을 얻을 수 있다.
+    ![postman](./postman-3.png) 
+
+2. 인증 요청을 위한 Bearer Token으로 JWT 사용
+
+---
+
+## Spring Security의 인증 프로세스
+
+1. AuthenticationManager: 인증의 주체. 다수의 인증 프로바이더와 작동할 수 있다.
+
+2. AuthenticationProvider: 특정한 종류의 인증 작업을 수행한다. (ex: JwtAuthenticationProvider)
+
+3. UserDeatilsService: 사용자 데이터를 불러오는 인터페이스
+
+인증 결과는 SecurityContextHolder > SecurityContext > Authentication > GrantedAuthority를 거쳐 저장된다.
+* Authentication: 유저 정보(Principal)를 담는다.
+* GrantedAuthority: 특정 유저 정보에게 허락된 권한(roles, scopes, ...)

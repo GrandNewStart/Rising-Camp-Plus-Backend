@@ -99,4 +99,4 @@ AWS는 전세계에 25개 이상의 Region에 데이터센터를 구축하였다
 
 | Region Code | Region | Availability Zones | Availability Zones List | 
 | ----------- | ------ | ------------------ | ----------------------- |
-| us-east-1 | US East (N. Virginia) | 6 | us-east-1a-east-1b, us-east-1c-east-1d, us-east-1e-east-1f |
+| us-east-1 | US East (N. Virginia) | 6 | us-east-1a-east-1b\n us-east-1c-east-1d\n us-east-1e-east-1f |

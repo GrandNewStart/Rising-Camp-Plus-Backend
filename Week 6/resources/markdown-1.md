@@ -93,10 +93,13 @@ IAM: Identity and Access Management. 인증(Authentication)과 인가(Authorizat
 
 Region: 서버가 설치된 지역. 여러 Region을 설정 할 수록 글로벌 스케일에서 일정한 서비스를 제공하기 용이해진다.
 
-Zone: 같은 Region 내에도 여러 서버를 설치할 수 있다. 이를 Zone으로 구분한다.
+Availability Zone: 같은 Region 내에도 여러 서버를 설치할 수 있다. 이를 Availability Zone으로 구분한다.
 
 AWS는 전세계에 25개 이상의 Region에 데이터센터를 구축하였다. 이 숫자는 매년 늘어나고있다. 덕분에 전세계 어디서나 균일한 퀄리티로 서비스를 제공하면서 각국의 정부 규제에 맞추기에도 용이해진다.
 
+Region과 Availability Zone의 예시
 | Region Code | Region | Availability Zones | Availability Zones List | 
 | ----------- | ------ | ------------------ | ----------------------- |
-| us-east-1 | US East (N. Virginia) | 6 | us-east-1a-east-1b\n us-east-1c-east-1d\n us-east-1e-east-1f |
+| us-east-1 | US East (N. Virginia) | 6 | us-east-1a-east-1b, us-east-1c-east-1d,s us-east-1e-east-1f |
+| eu-west-2 | Europe (London) | 3 | eu-west-2a-west-2b, eu-west-2c |
+| ap-south-1 | Asia Pacific (Mumbai) | 3 | ap-south-1a, ap-south-1b, ap-south-1c |

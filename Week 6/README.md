@@ -7,7 +7,9 @@
 
 ## 핵심 개념 정리
 
-[1. AWS 시작하기](./resources/markdown-1.md)
+[01. AWS 시작하기](./resources/markdown-1.md)
+
+[02. AWS 컴퓨팅 서비스](./resources/markdown-2.md)
 
 ## 진행 상황
 

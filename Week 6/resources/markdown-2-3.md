@@ -89,6 +89,6 @@
 
 * 그런데 똑같은 세팅으로 환경을 설정하는데도 어떨 때는 성공하고 어떨 때는 실패하는 경우가 있었다. 아직 원인이 무엇인지는 정확히 모르겠다.
 
-![browser](./browser-59.png)
+![browser](./browser-65.png)
 
 ### Elastic Beanstalk 사용하기

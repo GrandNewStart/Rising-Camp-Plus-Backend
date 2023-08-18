@@ -3,29 +3,29 @@
 ## AWS 계정 생성하기
 
 1. [https://aws.amazon.com/ko](https://aws.amazon.com/ko) 접속, 'AWS 계정 생성' 클릭
-![browser](./browser-1.png)
+![browser](./browser-01.png)
 
 2. 이메일과 계정 이름을 입력한다.
-![browser](./browser-2.png)
+![browser](./browser-02.png)
 
 3. 입력한 이메일로 인증코드가 날아갔을 것이다. 코드를 입력해주자.
-![browser](./browser-3.png)
-![browser](./browser-4.png)
+![browser](./browser-03.png)
+![browser](./browser-04.png)
 
 4. 패스워드를 두번 입력한다.
-![browser](./browser-5.png)
+![browser](./browser-05.png)
 
 5. 개인정보를 입력한다. 전부 써야하고 영어로 써야 한다. 주소 같은건 대충 아무 말이나 써도 넘어간다.
-![browser](./browser-6.png)
+![browser](./browser-06.png)
 
 6. 결제 정보를 입력한다. 해외결제 되는 카드를 준비해야 할 것이다.
-![browser](./browser-7.png)
+![browser](./browser-07.png)
 
 7. 계속 결제 정보를 입력한다. 모두 입력하고 다음을 누르면 입력한 카드로부터 100원이 출급됐다가 취소될 것이다. 100원도 없는 카드면 어떻게 되는거지...?
-![browser](./browser-8.png)
+![browser](./browser-08.png)
 
 8. 전하번호 인증의 시간이다.
-![browser](./browser-9.png)
+![browser](./browser-09.png)
 
 9. 인증번호를 받아서 입력하자.
 ![browser](./browser-10.png)

@@ -68,7 +68,7 @@
     - AWSElasticBeanstalkWebTier
     - AWSElasticBeanstalkWorkerTier
     - AWSElasticBeanstalkMulticontainerDocker
-    - AdministratorAccess-AWSElasticBeanstalk
+    - AWSElasticBeanstalkEnhancedHealth
     - AWSElasticBeanstalkManagedUpdatesCustomerRolePolicy
 ![browser](./browser-62.png)
 

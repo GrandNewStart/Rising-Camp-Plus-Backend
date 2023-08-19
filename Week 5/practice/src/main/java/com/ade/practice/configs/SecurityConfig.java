@@ -85,7 +85,6 @@ public class SecurityConfig {
                         DefaultOidcUser user = (DefaultOidcUser) authentication.getPrincipal();
                         String name = user.getFullName();
                         String idToken = user.getIdToken().getTokenValue();
-                        System.out.println(idToken);
                         try {
                             userService.createUser(id, name);
                         } catch (Exception e) { }
